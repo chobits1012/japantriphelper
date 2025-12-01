@@ -225,7 +225,8 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       )}
 
       {/* Floating Action Buttons (Absolute Top Right) */}
-      <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2">
+      {/* Updated top-4 to top-14 to avoid iPhone status bar overlap */}
+      <div className="absolute top-14 right-5 md:top-8 md:right-8 z-50 flex items-center gap-2 transition-all">
           {isEditing ? (
             <>
                <button 
