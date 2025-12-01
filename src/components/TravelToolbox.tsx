@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Wallet, Calculator, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Wallet, Calculator, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson } from 'lucide-react';
+import LZString from 'lz-string';
 import type { ExpenseItem, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
 interface TravelToolboxProps {
@@ -46,6 +47,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   // --- Backup State ---
   const [importCode, setImportCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize Checklist if empty
   useEffect(() => {
@@ -128,31 +130,54 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     ));
   };
 
-  // Backup Logic
-  const handleExport = () => {
-    const data = {
+  // --- BACKUP & SHARE LOGIC ---
+
+  const getExportData = () => {
+    return {
       tripSettings,
       itineraryData,
       expenses,
-      checklist
+      checklist,
+      version: 1,
+      timestamp: new Date().toISOString()
     };
-    const code = JSON.stringify(data);
-    navigator.clipboard.writeText(code);
+  };
+
+  // 1. Copy Compressed Code
+  const handleCopyCode = () => {
+    const data = getExportData();
+    const jsonString = JSON.stringify(data);
+    // Compress string to make it shorter for messaging apps
+    const compressed = LZString.compressToEncodedURIComponent(jsonString);
+    
+    navigator.clipboard.writeText(compressed);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleImport = () => {
-    try {
-      if (!importCode.trim()) return;
-      const data = JSON.parse(importCode);
-      
-      // Simple validation
-      if (!data.itineraryData || !data.tripSettings) {
-        throw new Error("無效的行程代碼格式");
+  // 2. Download JSON File
+  const handleDownloadFile = () => {
+    const data = getExportData();
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${tripSettings.name}_行程備份.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Common Import Processor
+  const processImportData = (data: any) => {
+     if (!data.itineraryData || !data.tripSettings) {
+        throw new Error("無效的行程資料格式");
       }
 
-      if (window.confirm("⚠️ 確定要匯入此行程嗎？\n\n您目前的所有資料將會被覆蓋！")) {
+      if (window.confirm(`⚠️ 確定要匯入行程「${data.tripSettings.name}」嗎？\n\n您目前手機上的所有資料將會被覆蓋！`)) {
         onUpdateTripSettings(data.tripSettings);
         onUpdateItinerary(data.itineraryData);
         if (data.expenses) onUpdateExpenses(data.expenses);
@@ -162,10 +187,54 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
         setImportCode('');
         onClose();
       }
+  };
+
+  // 3. Import from Code (Auto-detect compressed or raw)
+  const handleImportCode = () => {
+    try {
+      if (!importCode.trim()) return;
+      
+      let jsonString = importCode.trim();
+      
+      // Try to decompress if it doesn't look like JSON
+      if (!jsonString.startsWith('{')) {
+        const decompressed = LZString.decompressFromEncodedURIComponent(jsonString);
+        if (decompressed) {
+           jsonString = decompressed;
+        }
+      }
+
+      const data = JSON.parse(jsonString);
+      processImportData(data);
     } catch (e) {
-      alert("匯入失敗：代碼格式錯誤");
+      alert("匯入失敗：無效的代碼");
     }
   };
+
+  // 4. Import from File
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const result = e.target?.result as string;
+        const data = JSON.parse(result);
+        processImportData(data);
+      } catch (err) {
+        alert("讀取檔案失敗：格式錯誤");
+      }
+      // Reset input value so same file can be selected again if needed
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
 
   if (!isOpen) return null;
 
@@ -406,65 +475,80 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-japan-blue">
                     <Cloud size={24} />
                  </div>
-                 <h4 className="font-bold text-ink mb-1">雲端備份與分享</h4>
-                 <p className="text-xs text-gray-500 leading-relaxed">
-                   將您的行程轉換成代碼，傳送給朋友或在其他裝置匯入。
+                 <h4 className="font-bold text-ink mb-1">備份與分享行程</h4>
+                 <p className="text-xs text-gray-500 leading-relaxed px-4">
+                   將您的行程轉成代碼，或下載成小包裹檔案 (.json) 傳給朋友。
                  </p>
               </div>
 
-              {/* Export */}
-              <div className="space-y-2">
-                 <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1">
-                   <Upload size={14} /> 匯出行程 (分享)
-                 </label>
+              {/* Export Section */}
+              <div className="grid grid-cols-2 gap-3">
                  <button 
-                   onClick={handleExport}
+                   onClick={handleDownloadFile}
+                   className="flex flex-col items-center justify-center p-4 bg-japan-blue text-white rounded-xl shadow-md hover:bg-japan-blue/90 transition-all gap-2"
+                 >
+                   <FileJson size={24} />
+                   <div className="text-center">
+                     <span className="block text-sm font-bold">下載檔案</span>
+                     <span className="text-[10px] opacity-80">(推薦 LINE 分享)</span>
+                   </div>
+                 </button>
+                 
+                 <button 
+                   onClick={handleCopyCode}
                    className={`
-                     w-full py-4 rounded-xl border-2 border-dashed font-bold flex items-center justify-center gap-2 transition-all
+                     flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl transition-all gap-2
                      ${copied 
                        ? 'border-emerald-400 bg-emerald-50 text-emerald-600' 
                        : 'border-japan-blue/30 text-japan-blue hover:bg-blue-50'}
                    `}
                  >
-                   {copied ? (
-                     <>
-                       <Check size={18} /> 已複製到剪貼簿！
-                     </>
-                   ) : (
-                     <>
-                       <Copy size={18} /> 點擊複製行程代碼
-                     </>
-                   )}
+                   {copied ? <Check size={24} /> : <Copy size={24} />}
+                   <div className="text-center">
+                     <span className="block text-sm font-bold">{copied ? '已複製！' : '複製代碼'}</span>
+                     <span className="text-[10px] opacity-70">(文字訊息)</span>
+                   </div>
                  </button>
-                 <p className="text-[10px] text-gray-400 text-center">
-                   複製後，請貼給朋友或存到筆記本備份。
-                 </p>
               </div>
 
               <div className="relative flex items-center py-2">
                  <div className="flex-grow border-t border-gray-200"></div>
-                 <span className="flex-shrink-0 mx-4 text-gray-300 text-xs font-bold">OR</span>
+                 <span className="flex-shrink-0 mx-4 text-gray-300 text-xs font-bold">OR IMPORT</span>
                  <div className="flex-grow border-t border-gray-200"></div>
               </div>
 
-              {/* Import */}
-              <div className="space-y-2">
-                 <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1">
-                   <Download size={14} /> 匯入行程 (讀取)
-                 </label>
-                 <textarea 
-                   value={importCode}
-                   onChange={(e) => setImportCode(e.target.value)}
-                   placeholder="在此貼上行程代碼..."
-                   className="w-full p-3 h-24 text-xs font-mono border border-gray-200 rounded-lg outline-none focus:border-japan-blue resize-none"
+              {/* Import Section */}
+              <div className="space-y-3">
+                 <input 
+                   type="file" 
+                   accept=".json" 
+                   ref={fileInputRef} 
+                   onChange={handleFileUpload} 
+                   className="hidden" 
                  />
+                 
                  <button 
-                   onClick={handleImport}
-                   disabled={!importCode}
-                   className="w-full bg-japan-blue text-white py-3 rounded-xl font-bold hover:bg-japan-blue/90 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm"
+                   onClick={triggerFileUpload}
+                   className="w-full py-3 bg-white border border-gray-300 text-gray-600 rounded-xl font-bold hover:bg-gray-50 flex items-center justify-center gap-2"
                  >
-                   讀取代碼並覆蓋目前行程
+                   <Upload size={16} /> 選擇檔案 (.json) 匯入
                  </button>
+
+                 <div className="flex gap-2">
+                    <input 
+                      value={importCode}
+                      onChange={(e) => setImportCode(e.target.value)}
+                      placeholder="或貼上壓縮代碼..."
+                      className="flex-1 p-3 text-xs font-mono border border-gray-200 rounded-xl outline-none focus:border-japan-blue"
+                    />
+                    <button 
+                      onClick={handleImportCode}
+                      disabled={!importCode}
+                      className="px-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      讀取
+                    </button>
+                 </div>
               </div>
             </div>
           )}
