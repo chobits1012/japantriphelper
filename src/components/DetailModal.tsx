@@ -1,14 +1,13 @@
 
-
 import React, { useState, useEffect } from 'react';
-import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train } from 'lucide-react';
+import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
 import TimelineEvent from './TimelineEvent';
 import { REGIONS, REGIONAL_PASSES } from '../constants';
 
 interface DetailPanelProps {
   day: ItineraryDay;
-  allDays: ItineraryDay[]; // New: Pass all days for multi-day updates
+  allDays: ItineraryDay[];
   onUpdate: (updatedDay: ItineraryDay | ItineraryDay[]) => void;
   onHome: () => void;
   onNext: () => void;
@@ -27,7 +26,6 @@ const getWeatherIcon = (icon?: string) => {
   }
 };
 
-// Convert WMO Weather Codes to Icons
 const getLiveWeatherIcon = (code: number, size = 16) => {
   if (code === 0 || code === 1) return <Sun className="text-orange-500 animate-pulse" size={size} />; 
   if (code === 2 || code === 3) return <Cloud className="text-gray-400" size={size} />; 
@@ -54,7 +52,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const [forecast, setForecast] = useState<any[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(false);
 
-  // Reset edit data when day changes
   useEffect(() => {
     setEditData(day);
     setIsEditing(false);
@@ -68,13 +65,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     setLiveWeather(null);
     setForecast([]);
     
-    // Fetch Weather using Geocoding API + Forecast API
     const fetchWeather = async () => {
       if (!day.location) return;
 
       setLoadingWeather(true);
       try {
-        // 1. Geocoding: Find Lat/Lon from Location Name
         const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(day.location)}&count=1&language=zh&format=json`);
         const geoData = await geoRes.json();
 
@@ -85,7 +80,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
 
         const { latitude, longitude } = geoData.results[0];
 
-        // 2. Forecast: Get Weather
         const weatherRes = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
         );
@@ -118,50 +112,72 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     fetchWeather();
   }, [day]);
 
-  const handleSave = () => {
-    let updates: ItineraryDay[] = [];
-    
-    // 1. Prepare current day update
+  // Handle saving text edits (Title, Desc, Events)
+  const handleSaveText = () => {
     const sortedEvents = [...editData.events].sort((a, b) => a.time.localeCompare(b.time));
-    let currentDayUpdate = { ...editData, events: sortedEvents };
-
-    // 2. Handle Pass Logic (Multi-day update)
-    // Determine the actual pass name to save (either selected or custom typed)
-    const finalPassName = isCustomPass ? customPassName : selectedPass;
-
-    if (finalPassName && passDuration > 0) {
-        const startIndex = allDays.findIndex(d => d.day === day.day);
-        if (startIndex !== -1) {
-            // Update current day
-            currentDayUpdate.pass = true;
-            currentDayUpdate.passName = finalPassName;
-            updates.push(currentDayUpdate);
-
-            // Update subsequent days
-            for (let i = 1; i < passDuration; i++) {
-                if (startIndex + i < allDays.length) {
-                    const nextDay = allDays[startIndex + i];
-                    updates.push({
-                        ...nextDay,
-                        pass: true,
-                        passName: finalPassName
-                    });
-                }
-            }
-        }
-    } else {
-        // No pass update, just push current day
-        updates.push(currentDayUpdate);
-    }
-
-    onUpdate(updates);
+    const currentDayUpdate = { ...editData, events: sortedEvents };
+    onUpdate(currentDayUpdate);
     setEditData(currentDayUpdate);
     setIsEditing(false);
-    
-    // Reset Pass UI
-    setSelectedPass('');
-    setCustomPassName('');
-    setPassDuration(1);
+  };
+
+  // Handle applying pass to multiple days
+  const handleBatchApplyPass = () => {
+    const finalPassName = isCustomPass ? customPassName : selectedPass;
+    if (!finalPassName) {
+        alert("請選擇或輸入票券名稱");
+        return;
+    }
+
+    let updates: ItineraryDay[] = [];
+    const startIndex = allDays.findIndex(d => d.day === day.day);
+
+    if (startIndex !== -1) {
+        // Prepare updates for N days
+        for (let i = 0; i < passDuration; i++) {
+            if (startIndex + i < allDays.length) {
+                const targetDay = allDays[startIndex + i];
+                // If it's the current day, we also want to preserve any text edits currently in the inputs
+                const isCurrentDay = i === 0;
+                const baseData = isCurrentDay ? editData : targetDay;
+
+                updates.push({
+                    ...baseData,
+                    pass: true,
+                    passName: finalPassName
+                });
+            }
+        }
+        onUpdate(updates);
+        alert(`已成功將「${finalPassName}」套用到 ${updates.length} 天行程！`);
+        setIsEditing(false);
+    }
+  };
+
+  // Handle removing pass from multiple days
+  const handleBatchRemovePass = () => {
+     if (!window.confirm(`確定要從今天開始，移除連續 ${passDuration} 天的交通票券設定嗎？`)) return;
+
+     let updates: ItineraryDay[] = [];
+     const startIndex = allDays.findIndex(d => d.day === day.day);
+
+     if (startIndex !== -1) {
+        for (let i = 0; i < passDuration; i++) {
+            if (startIndex + i < allDays.length) {
+                const targetDay = allDays[startIndex + i];
+                const isCurrentDay = i === 0;
+                const baseData = isCurrentDay ? editData : targetDay;
+
+                updates.push({
+                    ...baseData,
+                    pass: false,
+                    passName: undefined
+                });
+            }
+        }
+        onUpdate(updates);
+        setIsEditing(false);
+     }
   };
 
   const handleCancel = () => {
@@ -198,7 +214,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       key={key}
       className={`h-full w-full flex flex-col bg-white relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 ${className || ''}`}
     >
-      {/* Watermark (Only visible in View Mode) */}
       {!isEditing && (
         <>
           <div 
@@ -209,42 +224,34 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         </>
       )}
 
-      {/* Content Container */}
       <div className="flex-1 overflow-y-auto relative z-10 px-6 py-8 md:px-12 md:py-10 no-scrollbar pb-32 safe-area-bottom">
         
         {/* Navigation Bar */}
         <div className="flex items-center justify-between mb-8 pt-2">
              <div className="flex items-center gap-4">
-               {/* Day Number */}
               <span className="text-4xl font-serif font-bold text-japan-blue/20 select-none">
                 {day.day}
               </span>
               <div className="h-8 w-px bg-japan-blue/20"></div>
               
-              {/* Date & Weather */}
               <div className="flex flex-col">
                 <span className="text-xs font-bold tracking-widest text-japan-blue uppercase">
                   {day.date} • {day.weekday}
                 </span>
                 
-                {/* Weather Display */}
                 {day.temp && !isEditing && (
                    <div className="flex flex-col gap-2 mt-1">
-                      {/* Live Weather Badge & Link */}
                       <a 
                         href={weatherUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="group flex items-center gap-3 text-sm font-medium text-gray-500 cursor-pointer transition-transform active:scale-95 origin-left"
-                        title="點擊查看詳細天氣"
                       >
-                          {/* Historical Average */}
                           <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                              {getWeatherIcon(day.weatherIcon)}
                              <span>{day.temp}</span>
                           </div>
 
-                          {/* Live Weather Badge */}
                           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-gray-200/60 text-ink group-hover:border-japan-blue/50 group-hover:text-japan-blue transition-colors">
                             {loadingWeather ? (
                               <Loader2 size={12} className="animate-spin text-japan-blue" />
@@ -263,8 +270,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                             )}
                           </div>
                       </a>
-
-                      {/* 7-Day Forecast Scroll View */}
                       {forecast.length > 0 && (
                         <div className="w-full max-w-[200px] md:max-w-[300px] overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mask-linear-fade">
                            {forecast.map((f, i) => (
@@ -285,9 +290,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               {isEditing ? (
                 <>
                    <button 
-                    onClick={handleSave}
+                    onClick={handleSaveText}
                     className="p-2 rounded-full bg-japan-blue text-white shadow-sm hover:bg-japan-blue/90"
-                    title="儲存並排序"
+                    title="儲存文字修改"
                   >
                     <Save size={18} />
                   </button>
@@ -303,7 +308,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-japan-blue transition-colors"
-                  title="編輯行程 (修改地點可更新天氣)"
+                  title="編輯行程"
                 >
                   <Pencil size={18} />
                 </button>
@@ -323,22 +328,27 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         {isEditing ? (
           <div className="space-y-8 animate-in fade-in duration-300">
             
-            {/* --- TRANSPORT PASS SETTING (Updated) --- */}
+            {/* --- TRANSPORT PASS SETTING (Batch Tools) --- */}
             <div className="bg-red-50 border border-red-100 p-4 rounded-xl space-y-3">
-               <div className="flex items-center gap-2 text-japan-red">
-                  <Train size={18} />
-                  <span className="text-xs font-bold uppercase tracking-wider">交通周遊券設定 (批次套用)</span>
+               <div className="flex items-center justify-between text-japan-red">
+                  <div className="flex items-center gap-2">
+                    <Train size={18} />
+                    <span className="text-xs font-bold uppercase tracking-wider">交通周遊券 (批次管理)</span>
+                  </div>
+                  {day.pass && (
+                    <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
+                       目前: {day.passName}
+                    </span>
+                  )}
                </div>
                
                <div className="flex flex-col gap-3">
-                  {/* Row 1: Region & Pass Type */}
                   <div className="flex gap-2">
-                      {/* Region Selector */}
                       <select 
                         value={selectedRegion}
                         onChange={(e) => {
                           setSelectedRegion(e.target.value);
-                          setSelectedPass(''); // Reset pass when region changes
+                          setSelectedPass('');
                           setCustomPassName('');
                         }}
                         className="w-1/3 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600"
@@ -348,7 +358,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                          ))}
                       </select>
 
-                      {/* Pass Selector */}
                       <select 
                         value={selectedPass}
                         onChange={(e) => {
@@ -359,7 +368,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                         }}
                         className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
                       >
-                         <option value="">選擇票券 (若不選則不更新)</option>
+                         <option value="">選擇票券...</option>
                          {REGIONAL_PASSES[selectedRegion]?.map(pass => (
                            <option key={pass} value={pass}>{pass}</option>
                          ))}
@@ -367,8 +376,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                       </select>
                   </div>
                   
-                  {/* Row 2: Duration & Custom Input */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                       {isCustomPass ? (
                         <input 
                            type="text" 
@@ -379,9 +387,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                            autoFocus
                         />
                       ) : (
-                        <div className="flex-1"></div> /* Spacer */
+                        <div className="flex-1"></div>
                       )}
 
+                      <span className="text-xs font-bold text-gray-400">範圍:</span>
                       <select
                         value={passDuration}
                         onChange={(e) => setPassDuration(parseInt(e.target.value))}
@@ -392,11 +401,26 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                          ))}
                       </select>
                   </div>
-               </div>
 
-               <p className="text-[10px] text-gray-500">
-                 * 選擇票券與天數後按下儲存，系統會自動將「今天」以及「後續天數」標記為使用該票券。
-               </p>
+                  {/* Batch Action Buttons */}
+                  <div className="flex gap-2 pt-1 border-t border-red-100 mt-1">
+                     <button 
+                       onClick={handleBatchApplyPass}
+                       disabled={(!selectedPass && !customPassName)}
+                       className="flex-1 bg-japan-red text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                     >
+                       <CheckCircle2 size={16} />
+                       立即套用 ({passDuration}天)
+                     </button>
+                     <button 
+                       onClick={handleBatchRemovePass}
+                       className="flex-1 bg-white text-gray-500 border border-gray-200 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2"
+                     >
+                       <Eraser size={16} />
+                       移除票券 ({passDuration}天)
+                     </button>
+                  </div>
+               </div>
             </div>
 
             {/* Header Edit */}
