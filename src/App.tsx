@@ -145,6 +145,14 @@ const App: React.FC = () => {
     }
   };
 
+  // Helper to generate short pass label (e.g. "5日券")
+  const getPassShortLabel = (passName?: string) => {
+    if (!passName) return 'JR PASS';
+    // Count how many days have this specific pass name
+    const count = itineraryData.filter(d => d.passName === passName).length;
+    return count > 1 ? `${count}日券` : '單日券';
+  };
+
   return (
     <div 
       className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper"
@@ -226,7 +234,12 @@ const App: React.FC = () => {
                           <div className="flex-1">
                              <div className="flex items-center justify-between mb-1">
                                 <h3 className="font-serif font-bold text-xl text-ink">{item.title}</h3>
-                                {item.pass && <span className="text-[10px] font-bold text-white bg-japan-red px-2 py-0.5 rounded-full">{item.passName || 'JR PASS'}</span>}
+                                {/* Shortened Pass Label */}
+                                {item.pass && (
+                                  <span className="text-[10px] font-bold text-white bg-japan-red px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    {getPassShortLabel(item.passName)}
+                                  </span>
+                                )}
                              </div>
                              <p className="text-sm text-gray-600 line-clamp-none">{item.desc}</p>
                           </div>
@@ -251,7 +264,12 @@ const App: React.FC = () => {
                             <h3 className={`font-bold text-lg font-serif truncate ${isSelected ? 'text-white' : 'text-ink'}`}>
                               {item.title}
                             </h3>
-                            {item.pass && !isSelected && <span className="text-[10px] font-bold text-japan-red border border-japan-red/30 px-1.5 rounded bg-red-50">JR</span>}
+                            {/* Shortened Pass Label in Sidebar */}
+                            {item.pass && !isSelected && (
+                              <span className="text-[10px] font-bold text-japan-red border border-japan-red/30 px-1.5 rounded bg-red-50 whitespace-nowrap">
+                                {getPassShortLabel(item.passName)}
+                              </span>
+                            )}
                           </div>
                           <p className={`text-sm truncate ${isSelected ? 'text-white/70' : 'text-gray-500'}`}>
                             {item.desc}
