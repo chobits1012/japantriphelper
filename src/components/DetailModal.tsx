@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
@@ -510,7 +511,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       </div>
 
       {/* Floating Navigation Footer */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 pl-6 pr-[156px] md:px-6 py-4 z-20 flex justify-between items-center">
+      <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-6 py-4 pb-8 z-20 flex justify-between items-center">
         <button 
           onClick={onPrev}
           disabled={!hasPrev || isEditing}

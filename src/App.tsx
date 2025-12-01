@@ -206,7 +206,7 @@ const App: React.FC = () => {
           </div>
 
           {/* List */}
-          <div className={`flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-28 ${isHome ? 'px-4 pt-4' : ''}`}>
+          <div className={`flex-1 overflow-y-auto overflow-x-hidden no-scrollbar ${isHome ? 'pb-28 px-4 pt-4' : 'pb-60 md:pb-28'}`}>
             <div className={`${isHome ? 'max-w-2xl mx-auto space-y-4' : ''}`}>
               {itineraryData.map((item, index) => {
                 const isSelected = selectedDayIndex === index;
@@ -267,16 +267,10 @@ const App: React.FC = () => {
           </div>
           
           {/* Action Buttons */}
-          <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6' : 'bottom-6 left-1/2 transform -translate-x-1/2'}`}>
-            {/* AI Button */}
-             <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white'}`}>
-               <Sparkles size={16} className={isHome ? "group-hover:text-yellow-300 transition-colors" : ""} />
-               <span className={`${!isHome ? 'hidden md:inline' : ''}`}>AI 排程</span>
-            </button>
-            
-            {/* Toolbox Button */}
-            <button onClick={() => setIsToolboxOpen(true)} title="旅遊工具箱" className={`p-2 rounded-full shadow-lg transition-all text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-orange-500 hover:bg-orange-600'}`}>
-               <Briefcase size={18} />
+          <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse md:flex-row md:bottom-6'}`}>
+            {/* Reset Button */}
+            <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700'}`}>
+               <RotateCcw size={16} />
             </button>
 
             {/* New Trip Button */}
@@ -284,9 +278,15 @@ const App: React.FC = () => {
                <MapIcon size={18} />
             </button>
 
-            {/* Reset Button */}
-            <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700'}`}>
-               <RotateCcw size={16} />
+            {/* Toolbox Button */}
+            <button onClick={() => setIsToolboxOpen(true)} title="旅遊工具箱" className={`p-2 rounded-full shadow-lg transition-all text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-orange-500 hover:bg-orange-600'}`}>
+               <Briefcase size={18} />
+            </button>
+
+            {/* AI Button */}
+             <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white'}`}>
+               <Sparkles size={16} className={isHome ? "group-hover:text-yellow-300 transition-colors" : ""} />
+               <span className={`${!isHome ? 'hidden md:inline' : ''}`}>AI 排程</span>
             </button>
           </div>
         </div>

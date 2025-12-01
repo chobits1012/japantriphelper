@@ -1,9 +1,22 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- viewport-fit=cover 讓內容可以延伸到 iPhone 的瀏海區域 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>2026 關西冬之旅</title>
+
+    <!-- iOS PWA 專用設定 (關鍵！) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="關西之旅" />
+
+    <!-- 連結 Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- 設定 iOS 主畫面圖示 -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2060/2060250.png" />
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,6 +47,14 @@
     <style>
       * { -webkit-tap-highlight-color: transparent; }
       body { margin: 0; padding: 0; background-color: #fcfbf9; }
+      
+      /* 確保全螢幕時，內容不會被 iPhone 瀏海或底部橫條擋住 */
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
     </style>
   <script type="importmap">
 {
