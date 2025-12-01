@@ -189,7 +189,7 @@ const App: React.FC = () => {
       <div className="absolute inset-0 flex flex-row overflow-hidden">
         
         {/* Sidebar */}
-        <div className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 ${isHome ? 'w-full bg-transparent' : 'w-[80px] md:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60'}`}>
+        <div className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60'}`}>
           
           {/* Sidebar Header */}
           <div className={`transition-all duration-500 flex-shrink-0 relative ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}`}>
@@ -203,7 +203,7 @@ const App: React.FC = () => {
              <div className="mt-4 w-16 h-1 bg-japan-red shadow-lg rounded-full"></div>
           </div>
 
-          <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50 ${!isHome ? 'hidden md:block opacity-100' : 'hidden opacity-0'}`}>
+          <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50 ${!isHome ? 'hidden lg:block opacity-100' : 'hidden opacity-0'}`}>
             <div className="flex items-center justify-center gap-2 mb-1 text-japan-blue/80">
               {getSeasonIcon(tripSettings.season, 16)}
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase">{tripSettings.startDate.split('-')[0]}</span>
@@ -214,7 +214,7 @@ const App: React.FC = () => {
           </div>
 
           {/* List */}
-          <div className={`flex-1 overflow-y-auto overflow-x-hidden no-scrollbar ${isHome ? 'pb-28 px-4 pt-4' : 'pb-60 md:pb-28'}`}>
+          <div className={`flex-1 overflow-y-auto overflow-x-hidden no-scrollbar ${isHome ? 'pb-28 px-4 pt-4' : 'pb-60 lg:pb-28'}`}>
             <div className={`${isHome ? 'max-w-2xl mx-auto space-y-4' : ''}`}>
               {itineraryData.map((item, index) => {
                 const isSelected = selectedDayIndex === index;
@@ -222,7 +222,7 @@ const App: React.FC = () => {
                   <div
                     key={index}
                     onClick={() => handleDaySelect(index)}
-                    className={`relative cursor-pointer transition-all duration-300 group ${isHome ? 'bg-white/85 backdrop-blur-sm hover:bg-white rounded-xl p-5 shadow-lg hover:shadow-2xl hover:scale-[1.02] border border-white/20' : isSelected ? 'bg-japan-blue text-white p-5 pl-6' : 'hover:bg-gray-50 text-ink p-5 pl-6 border-b border-gray-100 last:border-0'} ${!isHome && 'h-[80px] flex justify-center items-center md:block md:h-auto'}`}
+                    className={`relative cursor-pointer transition-all duration-300 group ${isHome ? 'bg-white/85 backdrop-blur-sm hover:bg-white rounded-xl p-5 shadow-lg hover:shadow-2xl hover:scale-[1.02] border border-white/20' : isSelected ? 'bg-japan-blue text-white p-5 pl-6' : 'hover:bg-gray-50 text-ink p-5 pl-6 border-b border-gray-100 last:border-0'} ${!isHome && 'h-[80px] flex justify-center items-center lg:block lg:h-auto'}`}
                   >
                      {/* Home Mode Layout */}
                      {isHome && (
@@ -249,17 +249,17 @@ const App: React.FC = () => {
 
                     {/* Sidebar Mode Layout */}
                     {!isHome && (
-                      <div className={`flex items-center ${!isHome ? 'flex-col md:flex-row' : 'flex-row'}`}>
-                        {isSelected && <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1 bg-japan-red" />}
-                        <div className={`flex flex-col items-center justify-center transition-all ${!isHome ? 'md:mr-4' : 'mr-5'} ${!isSelected && !isHome ? 'text-gray-400' : ''}`}>
-                          <span className={`font-serif font-bold leading-none ${isSelected ? 'text-lg md:text-2xl' : 'text-2xl'}`}>
+                      <div className={`flex items-center ${!isHome ? 'flex-col lg:flex-row' : 'flex-row'}`}>
+                        {isSelected && <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 bg-japan-red" />}
+                        <div className={`flex flex-col items-center justify-center transition-all ${!isHome ? 'lg:mr-4' : 'mr-5'} ${!isSelected && !isHome ? 'text-gray-400' : ''}`}>
+                          <span className={`font-serif font-bold leading-none ${isSelected ? 'text-lg lg:text-2xl' : 'text-2xl'}`}>
                             {item.date.split('/')[1]}
                           </span>
                           <span className={`text-[10px] uppercase mt-1 ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
                             {item.weekday}
                           </span>
                         </div>
-                        <div className="hidden md:block flex-1 min-w-0">
+                        <div className="hidden lg:block flex-1 min-w-0">
                            <div className="flex justify-between items-center mb-1">
                             <h3 className={`font-bold text-lg font-serif truncate ${isSelected ? 'text-white' : 'text-ink'}`}>
                               {item.title}
@@ -285,7 +285,7 @@ const App: React.FC = () => {
           </div>
           
           {/* Action Buttons */}
-          <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse md:flex-row md:bottom-6'}`}>
+          <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse lg:flex-row lg:bottom-6'}`}>
             {/* Reset Button */}
             <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700'}`}>
                <RotateCcw size={16} />
@@ -304,7 +304,7 @@ const App: React.FC = () => {
             {/* AI Button */}
              <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white'}`}>
                <Sparkles size={16} className={isHome ? "group-hover:text-yellow-300 transition-colors" : ""} />
-               <span className={`${!isHome ? 'hidden md:inline' : ''}`}>AI 排程</span>
+               <span className={`${!isHome ? 'hidden lg:inline' : ''}`}>AI 排程</span>
             </button>
           </div>
         </div>
