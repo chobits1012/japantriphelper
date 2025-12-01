@@ -343,7 +343,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                </div>
                
                <div className="flex flex-col gap-3">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col md:flex-row gap-3">
                       <select 
                         value={selectedRegion}
                         onChange={(e) => {
@@ -351,7 +351,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                           setSelectedPass('');
                           setCustomPassName('');
                         }}
-                        className="w-1/3 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600"
+                        className="w-full md:w-1/3 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600"
                       >
                          {REGIONS.map(r => (
                            <option key={r} value={r}>{r}</option>
@@ -366,7 +366,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                             setCustomPassName('');
                           }
                         }}
-                        className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
+                        className="w-full md:flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
                       >
                          <option value="">選擇票券...</option>
                          {REGIONAL_PASSES[selectedRegion]?.map(pass => (
@@ -555,6 +555,23 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               </p>
             </div>
 
+            {/* Transport Pass Badge in Detail View */}
+            {day.pass && (
+              <div className="max-w-3xl mx-auto mb-8 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+                 <div className="bg-red-50 border border-red-100 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm w-full md:w-auto">
+                    <div className="bg-japan-red text-white p-1.5 rounded-full">
+                       <Train size={16} />
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">今日交通票券</p>
+                       <p className="text-japan-red font-bold text-sm md:text-base">
+                         {day.passName || 'JR PASS'}
+                       </p>
+                    </div>
+                 </div>
+              </div>
+            )}
+
             <div className="max-w-3xl mx-auto pl-2 md:pl-4 mb-12">
               <div className="relative border-l-[2px] border-japan-blue/10 pl-8 pb-4 space-y-2">
                 {day.events.map((event, index) => (
@@ -594,7 +611,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       </div>
 
       {/* Floating Navigation Footer */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-6 py-4 pb-8 z-20 flex justify-between items-center">
+      <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-6 py-4 pb-8 z-20 flex justify-between items-center safe-area-bottom">
         <button 
           onClick={onPrev}
           disabled={!hasPrev || isEditing}
