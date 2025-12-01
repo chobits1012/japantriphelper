@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
@@ -212,7 +211,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   return (
     <div 
       key={key}
-      className={`h-full w-full flex flex-col bg-white relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 ${className || ''}`}
+      className={`h-full w-full flex flex-col bg-white relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 pt-[env(safe-area-inset-top)] ${className || ''}`}
     >
       {!isEditing && (
         <>
@@ -225,8 +224,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       )}
 
       {/* Floating Action Buttons (Absolute Top Right) */}
-      {/* Updated top-4 to top-14 to avoid iPhone status bar overlap */}
-      <div className="absolute top-14 right-5 md:top-8 md:right-8 z-50 flex items-center gap-2 transition-all">
+      <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-5 md:top-8 md:right-8 z-50 flex items-center gap-2 transition-all">
           {isEditing ? (
             <>
                <button 
@@ -345,7 +343,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                </div>
                
                <div className="flex flex-col gap-3">
-                  {/* Vertical Stack for Selects */}
+                  {/* Vertical Stack for Selects - Full width for mobile friendliness */}
                   <div className="flex flex-col gap-3">
                       <select 
                         value={selectedRegion}

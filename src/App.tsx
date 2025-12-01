@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf } from 'lucide-react';
 import { ITINERARY_DATA, WASHI_PATTERN, HERO_IMAGE } from './constants';
@@ -115,12 +114,9 @@ const App: React.FC = () => {
   const handleDayUpdate = (updatedDay: ItineraryDay | ItineraryDay[]) => {
     setItineraryData(prevData => {
         const updates = Array.isArray(updatedDay) ? updatedDay : [updatedDay];
-        
-        // Explicitly type the map entry to [string, ItineraryDay] to satisfy Map constructor
         const updateMap = new Map<string, ItineraryDay>(
             updates.map((d): [string, ItineraryDay] => [d.day, d])
         );
-        
         return prevData.map(day => updateMap.get(day.day) || day);
     });
   };
@@ -142,7 +138,6 @@ const App: React.FC = () => {
   // Helper to generate short pass label (e.g. "5日券")
   const getPassShortLabel = (passName?: string) => {
     if (!passName) return 'JR PASS';
-    // Count how many days have this specific pass name
     const count = itineraryData.filter(d => d.passName === passName).length;
     return count > 1 ? `${count}日券` : '單日券';
   };
@@ -186,8 +181,10 @@ const App: React.FC = () => {
       {/* Main Container */}
       <div className="absolute inset-0 flex flex-row overflow-hidden">
         
-        {/* Sidebar */}
-        <div className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60'}`}>
+        {/* Sidebar - Updated to lg for iPad fix */}
+        <div 
+           className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 pt-[env(safe-area-inset-top)] ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60'}`}
+        >
           
           {/* Sidebar Header */}
           <div className={`transition-all duration-500 flex-shrink-0 relative ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}`}>
@@ -204,7 +201,7 @@ const App: React.FC = () => {
           <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50 ${!isHome ? 'hidden lg:block opacity-100' : 'hidden opacity-0'}`}>
             <div className="flex items-center justify-center gap-2 mb-1 text-japan-blue/80">
               {getSeasonIcon(tripSettings.season, 16)}
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase">{tripSettings.startDate.split('-')[0]}</span>
+              <span className="text-xs font-bold tracking-[0.2em] uppercase">{tripSettings.startDate.split('-')[0]}</span>
             </div>
             <h1 className="text-2xl font-serif font-bold text-japan-blue tracking-widest line-clamp-1">
               {tripSettings.name}
@@ -245,7 +242,7 @@ const App: React.FC = () => {
                        </div>
                      )}
 
-                    {/* Sidebar Mode Layout */}
+                    {/* Sidebar Mode Layout - Updated md to lg */}
                     {!isHome && (
                       <div className={`flex items-center ${!isHome ? 'flex-col lg:flex-row' : 'flex-row'}`}>
                         {isSelected && <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 bg-japan-red" />}
@@ -282,7 +279,7 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          {/* Action Buttons */}
+          {/* Action Buttons - Updated md to lg */}
           <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse lg:flex-row lg:bottom-6'}`}>
             {/* Reset Button */}
             <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700'}`}>
@@ -299,7 +296,7 @@ const App: React.FC = () => {
                <Briefcase size={18} />
             </button>
 
-            {/* AI Button */}
+            {/* AI Button - Updated md to lg */}
              <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white'}`}>
                <Sparkles size={16} className={isHome ? "group-hover:text-yellow-300 transition-colors" : ""} />
                <span className={`${!isHome ? 'hidden lg:inline' : ''}`}>AI 排程</span>
