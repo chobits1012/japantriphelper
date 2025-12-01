@@ -1,3 +1,4 @@
+
 import type { ItineraryDay } from './types';
 
 export const WASHI_PATTERN = `data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d0d0d0' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E`;
@@ -5,17 +6,65 @@ export const WASHI_PATTERN = `data:image/svg+xml,%3Csvg width='60' height='60' v
 // Kyoto Winter Snow Scene
 export const HERO_IMAGE = "https://images.unsplash.com/photo-1624253321171-1be53e12f5f4?q=80&w=2000";
 
-export const TRANSPORT_PASSES = [
-  "JR 關西廣域鐵路周遊券",
-  "JR 關西地區鐵路周遊券",
-  "JR 關西 & 廣島地區鐵路周遊券",
-  "JR 山陽 & 山陰地區鐵路周遊券",
-  "關西周遊卡 (Kansai Thru Pass)",
-  "大阪周遊卡 (Osaka Amazing Pass)",
-  "京阪電車京都 & 大阪觀光一日券",
-  "阪急全線乘車券",
-  "近鐵電車周遊券"
+export const REGIONS = [
+  "關西地區", 
+  "關東地區", 
+  "北海道", 
+  "東海/中部", 
+  "中國/四國", 
+  "九州", 
+  "全日本/其他"
 ];
+
+export const REGIONAL_PASSES: Record<string, string[]> = {
+  "關西地區": [
+    "JR 關西廣域鐵路周遊券",
+    "JR 關西地區鐵路周遊券",
+    "JR 關西 & 廣島地區鐵路周遊券",
+    "JR 山陽 & 山陰地區鐵路周遊券",
+    "關西周遊卡 (Kansai Thru Pass)",
+    "大阪周遊卡 (Osaka Amazing Pass)",
+    "京阪電車京都 & 大阪觀光一日券",
+    "阪急全線乘車券",
+    "近鐵電車周遊券"
+  ],
+  "關東地區": [
+    "JR 東京廣域周遊券",
+    "JR 東日本 (東北地區)",
+    "JR 東日本 (長野、新潟地區)",
+    "Tokyo Subway Ticket",
+    "箱根周遊券",
+    "富士箱根周遊券",
+    "日光周遊券"
+  ],
+  "北海道": [
+    "JR 北海道鐵路周遊券",
+    "JR 札幌 - 登別區域鐵路周遊券",
+    "JR 札幌 - 富良野區域鐵路周遊券"
+  ],
+  "東海/中部": [
+    "JR 高山、北陸地區周遊券",
+    "JR 伊勢、熊野、和歌山地區周遊券",
+    "JR 富士山、靜岡地區周遊券",
+    "昇龍道巴士周遊券"
+  ],
+  "中國/四國": [
+    "JR 岡山 & 廣島 & 山口地區鐵路周遊券",
+    "JR 廣島 & 山口地區鐵路周遊券",
+    "JR 四國鐵路周遊券",
+    "山陰 & 岡山地區鐵路周遊券"
+  ],
+  "九州": [
+    "JR 九州鐵路周遊券 (全九州)",
+    "JR 九州鐵路周遊券 (北九州)",
+    "JR 九州鐵路周遊券 (南九州)",
+    "SUNQ PASS (巴士)"
+  ],
+  "全日本/其他": [
+    "JR PASS 全日本鐵路周遊券",
+    "JR 青春18旅遊通票"
+  ]
+};
 
 export const ITINERARY_DATA: ItineraryDay[] = [
   {

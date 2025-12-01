@@ -1,9 +1,10 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
 import TimelineEvent from './TimelineEvent';
-import { TRANSPORT_PASSES } from '../constants';
+import { REGIONS, REGIONAL_PASSES } from '../constants';
 
 interface DetailPanelProps {
   day: ItineraryDay;
@@ -42,8 +43,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const [editData, setEditData] = useState<ItineraryDay>(day);
   
   // Transport Pass State
+  const [selectedRegion, setSelectedRegion] = useState<string>(REGIONS[0]);
   const [selectedPass, setSelectedPass] = useState<string>('');
+  const [customPassName, setCustomPassName] = useState<string>('');
   const [passDuration, setPassDuration] = useState<number>(1);
+  const isCustomPass = selectedPass === 'custom';
 
   // Live Weather State
   const [liveWeather, setLiveWeather] = useState<{temp: number, code: number} | null>(null);
@@ -54,8 +58,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   useEffect(() => {
     setEditData(day);
     setIsEditing(false);
-    setSelectedPass(''); // Reset pass selection
+    
+    // Reset Pass UI
+    setSelectedRegion(REGIONS[0]);
+    setSelectedPass('');
+    setCustomPassName('');
     setPassDuration(1);
+    
     setLiveWeather(null);
     setForecast([]);
     
@@ -117,12 +126,15 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     let currentDayUpdate = { ...editData, events: sortedEvents };
 
     // 2. Handle Pass Logic (Multi-day update)
-    if (selectedPass && passDuration > 0) {
+    // Determine the actual pass name to save (either selected or custom typed)
+    const finalPassName = isCustomPass ? customPassName : selectedPass;
+
+    if (finalPassName && passDuration > 0) {
         const startIndex = allDays.findIndex(d => d.day === day.day);
         if (startIndex !== -1) {
             // Update current day
             currentDayUpdate.pass = true;
-            currentDayUpdate.passName = selectedPass;
+            currentDayUpdate.passName = finalPassName;
             updates.push(currentDayUpdate);
 
             // Update subsequent days
@@ -132,7 +144,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                     updates.push({
                         ...nextDay,
                         pass: true,
-                        passName: selectedPass
+                        passName: finalPassName
                     });
                 }
             }
@@ -145,7 +157,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     onUpdate(updates);
     setEditData(currentDayUpdate);
     setIsEditing(false);
+    
+    // Reset Pass UI
     setSelectedPass('');
+    setCustomPassName('');
     setPassDuration(1);
   };
 
@@ -195,7 +210,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       )}
 
       {/* Content Container */}
-      <div className="flex-1 overflow-y-auto relative z-10 px-6 py-8 md:px-12 md:py-10 no-scrollbar pb-32">
+      <div className="flex-1 overflow-y-auto relative z-10 px-6 py-8 md:px-12 md:py-10 no-scrollbar pb-32 safe-area-bottom">
         
         {/* Navigation Bar */}
         <div className="flex items-center justify-between mb-8 pt-2">
@@ -308,33 +323,77 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         {isEditing ? (
           <div className="space-y-8 animate-in fade-in duration-300">
             
-            {/* --- TRANSPORT PASS SETTING --- */}
+            {/* --- TRANSPORT PASS SETTING (Updated) --- */}
             <div className="bg-red-50 border border-red-100 p-4 rounded-xl space-y-3">
                <div className="flex items-center gap-2 text-japan-red">
                   <Train size={18} />
                   <span className="text-xs font-bold uppercase tracking-wider">交通周遊券設定 (批次套用)</span>
                </div>
-               <div className="flex gap-2">
-                  <select 
-                    value={selectedPass}
-                    onChange={(e) => setSelectedPass(e.target.value)}
-                    className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
-                  >
-                     <option value="">選擇票券 (若不選則不更新)</option>
-                     {TRANSPORT_PASSES.map(pass => (
-                       <option key={pass} value={pass}>{pass}</option>
-                     ))}
-                  </select>
-                  <select
-                    value={passDuration}
-                    onChange={(e) => setPassDuration(parseInt(e.target.value))}
-                    className="w-24 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
-                  >
-                     {[1,2,3,4,5,7,10].map(d => (
-                       <option key={d} value={d}>{d} 天</option>
-                     ))}
-                  </select>
+               
+               <div className="flex flex-col gap-3">
+                  {/* Row 1: Region & Pass Type */}
+                  <div className="flex gap-2">
+                      {/* Region Selector */}
+                      <select 
+                        value={selectedRegion}
+                        onChange={(e) => {
+                          setSelectedRegion(e.target.value);
+                          setSelectedPass(''); // Reset pass when region changes
+                          setCustomPassName('');
+                        }}
+                        className="w-1/3 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600"
+                      >
+                         {REGIONS.map(r => (
+                           <option key={r} value={r}>{r}</option>
+                         ))}
+                      </select>
+
+                      {/* Pass Selector */}
+                      <select 
+                        value={selectedPass}
+                        onChange={(e) => {
+                          setSelectedPass(e.target.value);
+                          if (e.target.value !== 'custom') {
+                            setCustomPassName('');
+                          }
+                        }}
+                        className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
+                      >
+                         <option value="">選擇票券 (若不選則不更新)</option>
+                         {REGIONAL_PASSES[selectedRegion]?.map(pass => (
+                           <option key={pass} value={pass}>{pass}</option>
+                         ))}
+                         <option value="custom">✏️ 自行新增...</option>
+                      </select>
+                  </div>
+                  
+                  {/* Row 2: Duration & Custom Input */}
+                  <div className="flex gap-2">
+                      {isCustomPass ? (
+                        <input 
+                           type="text" 
+                           value={customPassName}
+                           onChange={(e) => setCustomPassName(e.target.value)}
+                           placeholder="輸入票券名稱..."
+                           className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
+                           autoFocus
+                        />
+                      ) : (
+                        <div className="flex-1"></div> /* Spacer */
+                      )}
+
+                      <select
+                        value={passDuration}
+                        onChange={(e) => setPassDuration(parseInt(e.target.value))}
+                        className="w-24 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
+                      >
+                         {[1,2,3,4,5,6,7,10,14,21].map(d => (
+                           <option key={d} value={d}>{d} 天</option>
+                         ))}
+                      </select>
+                  </div>
                </div>
+
                <p className="text-[10px] text-gray-500">
                  * 選擇票券與天數後按下儲存，系統會自動將「今天」以及「後續天數」標記為使用該票券。
                </p>
