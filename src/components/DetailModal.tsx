@@ -224,23 +224,61 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         </>
       )}
 
+      {/* Floating Action Buttons (Absolute Top Right) */}
+      <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2">
+          {isEditing ? (
+            <>
+               <button 
+                onClick={handleSaveText}
+                className="p-2 rounded-full bg-japan-blue text-white shadow-lg hover:bg-japan-blue/90 transition-transform hover:scale-105"
+                title="儲存文字修改"
+              >
+                <Save size={20} />
+              </button>
+              <button 
+                onClick={handleCancel}
+                className="p-2 rounded-full bg-white text-gray-500 hover:bg-gray-100 shadow-lg transition-transform hover:scale-105 border border-gray-100"
+                title="取消"
+              >
+                <X size={20} />
+              </button>
+            </>
+          ) : (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="p-2 rounded-full bg-white text-gray-400 hover:text-japan-blue hover:bg-gray-50 shadow-lg transition-transform hover:scale-105 border border-gray-100"
+              title="編輯行程"
+            >
+              <Pencil size={20} />
+            </button>
+          )}
+          
+          <button 
+            onClick={onHome}
+            className="p-2 rounded-full bg-white text-japan-blue hover:bg-gray-50 shadow-lg transition-transform hover:scale-105 border border-gray-100"
+            title="回到首頁"
+          >
+            <Home size={20} />
+          </button>
+      </div>
+
       <div className="flex-1 overflow-y-auto relative z-10 px-6 py-8 md:px-12 md:py-10 no-scrollbar pb-32 safe-area-bottom">
         
-        {/* Navigation Bar */}
-        <div className="flex items-center justify-between mb-8 pt-2">
+        {/* Navigation Bar Info (Buttons moved out) */}
+        <div className="mb-8 pt-4">
              <div className="flex items-center gap-4">
               <span className="text-4xl font-serif font-bold text-japan-blue/20 select-none">
                 {day.day}
               </span>
               <div className="h-8 w-px bg-japan-blue/20"></div>
               
-              <div className="flex flex-col">
+              <div className="flex flex-col w-full">
                 <span className="text-xs font-bold tracking-widest text-japan-blue uppercase">
                   {day.date} • {day.weekday}
                 </span>
                 
                 {day.temp && !isEditing && (
-                   <div className="flex flex-col gap-2 mt-1">
+                   <div className="flex flex-col gap-2 mt-1 w-full">
                       <a 
                         href={weatherUrl}
                         target="_blank"
@@ -271,7 +309,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                           </div>
                       </a>
                       {forecast.length > 0 && (
-                        <div className="w-full max-w-[200px] md:max-w-[300px] overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mask-linear-fade">
+                        <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mask-linear-fade pr-12">
                            {forecast.map((f, i) => (
                              <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center bg-white/40 p-1.5 rounded-lg border border-white/60 min-w-[50px]">
                                 <span className="text-[10px] text-gray-500 font-mono">{f.date}</span>
@@ -284,43 +322,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                    </div>
                 )}
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <>
-                   <button 
-                    onClick={handleSaveText}
-                    className="p-2 rounded-full bg-japan-blue text-white shadow-sm hover:bg-japan-blue/90"
-                    title="儲存文字修改"
-                  >
-                    <Save size={18} />
-                  </button>
-                  <button 
-                    onClick={handleCancel}
-                    className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-                    title="取消"
-                  >
-                    <X size={18} />
-                  </button>
-                </>
-              ) : (
-                <button 
-                  onClick={() => setIsEditing(true)}
-                  className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-japan-blue transition-colors"
-                  title="編輯行程"
-                >
-                  <Pencil size={18} />
-                </button>
-              )}
-              
-              <button 
-                onClick={onHome}
-                className="p-2 rounded-full hover:bg-gray-100 text-japan-blue transition-colors bg-white shadow-sm border border-gray-100"
-                title="回到首頁"
-              >
-                <Home size={18} />
-              </button>
             </div>
         </div>
           
@@ -343,7 +344,8 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                </div>
                
                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col md:flex-row gap-3">
+                  {/* Vertical Stack for Selects */}
+                  <div className="flex flex-col gap-3">
                       <select 
                         value={selectedRegion}
                         onChange={(e) => {
@@ -351,7 +353,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                           setSelectedPass('');
                           setCustomPassName('');
                         }}
-                        className="w-full md:w-1/3 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600"
+                        className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600 shadow-sm"
                       >
                          {REGIONS.map(r => (
                            <option key={r} value={r}>{r}</option>
@@ -366,7 +368,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                             setCustomPassName('');
                           }
                         }}
-                        className="w-full md:flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red"
+                        className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red shadow-sm"
                       >
                          <option value="">選擇票券...</option>
                          {REGIONAL_PASSES[selectedRegion]?.map(pass => (
@@ -407,17 +409,17 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                      <button 
                        onClick={handleBatchApplyPass}
                        disabled={(!selectedPass && !customPassName)}
-                       className="flex-1 bg-japan-red text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                       className="flex-1 bg-japan-red text-white py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                      >
                        <CheckCircle2 size={16} />
                        立即套用 ({passDuration}天)
                      </button>
                      <button 
                        onClick={handleBatchRemovePass}
-                       className="flex-1 bg-white text-gray-500 border border-gray-200 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2"
+                       className="flex-1 bg-white text-gray-500 border border-gray-200 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2"
                      >
                        <Eraser size={16} />
-                       移除票券 ({passDuration}天)
+                       移除 ({passDuration}天)
                      </button>
                   </div>
                </div>
@@ -555,16 +557,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               </p>
             </div>
 
-            {/* Transport Pass Badge in Detail View */}
+            {/* Transport Pass Badge in Detail View - Small & Clean */}
             {day.pass && (
-              <div className="max-w-3xl mx-auto mb-8 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
-                 <div className="bg-red-50 border border-red-100 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm w-full md:w-auto">
-                    <div className="bg-japan-red text-white p-1.5 rounded-full">
-                       <Train size={16} />
+              <div className="max-w-3xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-2">
+                 <div className="inline-flex items-center gap-3 bg-red-50 border border-red-100 pr-4 pl-2 py-2 rounded-lg shadow-sm">
+                    <div className="bg-japan-red text-white p-1 rounded">
+                       <Train size={14} />
                     </div>
                     <div>
-                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">今日交通票券</p>
-                       <p className="text-japan-red font-bold text-sm md:text-base">
+                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-0.5">交通票券</p>
+                       <p className="text-japan-red font-bold text-sm leading-none">
                          {day.passName || 'JR PASS'}
                        </p>
                     </div>
