@@ -1,10 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, Wallet, Calculator, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins } from 'lucide-react';
-import type { ExpenseItem, ChecklistItem } from '../types';
+import { X, Wallet, Calculator, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check } from 'lucide-react';
+import type { ExpenseItem, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
 interface TravelToolboxProps {
   isOpen: boolean;
   onClose: () => void;
+  tripSettings: TripSettings;
+  onUpdateTripSettings: (settings: TripSettings) => void;
+  itineraryData: ItineraryDay[];
+  onUpdateItinerary: (data: ItineraryDay[]) => void;
   expenses: ExpenseItem[];
   onUpdateExpenses: (items: ExpenseItem[]) => void;
   checklist: ChecklistItem[];
@@ -17,11 +22,17 @@ const DEFAULT_CHECKLIST = [
   "保暖衣物 / 發熱衣", "好走的鞋子", "Visit Japan Web 填寫"
 ];
 
-const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses, onUpdateExpenses, checklist, onUpdateChecklist }) => {
-  const [activeTab, setActiveTab] = useState<'currency' | 'expense' | 'checklist'>('expense');
+const TravelToolbox: React.FC<TravelToolboxProps> = ({ 
+  isOpen, onClose, 
+  tripSettings, onUpdateTripSettings,
+  itineraryData, onUpdateItinerary,
+  expenses, onUpdateExpenses, 
+  checklist, onUpdateChecklist 
+}) => {
+  const [activeTab, setActiveTab] = useState<'currency' | 'expense' | 'checklist' | 'backup'>('expense');
   
   // --- Currency State ---
-  const [rate, setRate] = useState<number>(0.215); // Default fallback
+  const [rate, setRate] = useState<number>(0.215);
   const [jpyInput, setJpyInput] = useState<string>('1000');
   const [twdInput, setTwdInput] = useState<string>('');
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -31,6 +42,10 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses
   const [newExpTitle, setNewExpTitle] = useState('');
   const [newExpAmount, setNewExpAmount] = useState('');
   const [newExpCat, setNewExpCat] = useState<ExpenseItem['category']>('food');
+
+  // --- Backup State ---
+  const [importCode, setImportCode] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Initialize Checklist if empty
   useEffect(() => {
@@ -54,13 +69,11 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses
   const fetchRate = async () => {
     setLoadingRate(true);
     try {
-      // Using a free API (ExchangeRate-API)
       const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
       const data = await res.json();
       const currentRate = data.rates.TWD;
       setRate(currentRate);
       setLastUpdated(new Date().toLocaleTimeString());
-      // Recalculate TWD based on current JPY input
       setTwdInput((parseFloat(jpyInput) * currentRate).toFixed(0));
     } catch (e) {
       console.error("Failed to fetch rate", e);
@@ -115,6 +128,45 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses
     ));
   };
 
+  // Backup Logic
+  const handleExport = () => {
+    const data = {
+      tripSettings,
+      itineraryData,
+      expenses,
+      checklist
+    };
+    const code = JSON.stringify(data);
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleImport = () => {
+    try {
+      if (!importCode.trim()) return;
+      const data = JSON.parse(importCode);
+      
+      // Simple validation
+      if (!data.itineraryData || !data.tripSettings) {
+        throw new Error("無效的行程代碼格式");
+      }
+
+      if (window.confirm("⚠️ 確定要匯入此行程嗎？\n\n您目前的所有資料將會被覆蓋！")) {
+        onUpdateTripSettings(data.tripSettings);
+        onUpdateItinerary(data.itineraryData);
+        if (data.expenses) onUpdateExpenses(data.expenses);
+        if (data.checklist) onUpdateChecklist(data.checklist);
+        
+        alert("匯入成功！");
+        setImportCode('');
+        onClose();
+      }
+    } catch (e) {
+      alert("匯入失敗：代碼格式錯誤");
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -133,24 +185,30 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100">
+        <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar">
           <button 
             onClick={() => setActiveTab('expense')}
-            className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'expense' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
+            className={`flex-1 min-w-[80px] py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'expense' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
           >
-            <Coins size={16} /> 記帳
+            <Coins size={16} /> <span className="hidden sm:inline">記帳</span>
           </button>
           <button 
             onClick={() => setActiveTab('currency')}
-            className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'currency' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
+            className={`flex-1 min-w-[80px] py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'currency' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
           >
-            <RefreshCw size={16} /> 匯率
+            <RefreshCw size={16} /> <span className="hidden sm:inline">匯率</span>
           </button>
           <button 
             onClick={() => setActiveTab('checklist')}
-            className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'checklist' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
+            className={`flex-1 min-w-[80px] py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'checklist' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
           >
-            <CheckSquare size={16} /> 清單
+            <CheckSquare size={16} /> <span className="hidden sm:inline">清單</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('backup')}
+            className={`flex-1 min-w-[80px] py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'backup' ? 'text-japan-blue border-b-2 border-japan-blue bg-blue-50/50' : 'text-gray-400 hover:bg-gray-50'}`}
+          >
+            <Cloud size={16} /> <span className="hidden sm:inline">備份</span>
           </button>
         </div>
 
@@ -288,10 +346,6 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses
                       />
                    </div>
                 </div>
-                
-                <p className="text-xs text-center text-gray-400 px-4">
-                   * 匯率僅供參考，實際請依銀行或換匯店為準。
-                </p>
              </div>
           )}
 
@@ -343,6 +397,76 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({ isOpen, onClose, expenses
                    />
                 </div>
              </div>
+          )}
+
+          {/* --- BACKUP TAB --- */}
+          {activeTab === 'backup' && (
+            <div className="space-y-6 pt-2">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-japan-blue">
+                    <Cloud size={24} />
+                 </div>
+                 <h4 className="font-bold text-ink mb-1">雲端備份與分享</h4>
+                 <p className="text-xs text-gray-500 leading-relaxed">
+                   將您的行程轉換成代碼，傳送給朋友或在其他裝置匯入。
+                 </p>
+              </div>
+
+              {/* Export */}
+              <div className="space-y-2">
+                 <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1">
+                   <Upload size={14} /> 匯出行程 (分享)
+                 </label>
+                 <button 
+                   onClick={handleExport}
+                   className={`
+                     w-full py-4 rounded-xl border-2 border-dashed font-bold flex items-center justify-center gap-2 transition-all
+                     ${copied 
+                       ? 'border-emerald-400 bg-emerald-50 text-emerald-600' 
+                       : 'border-japan-blue/30 text-japan-blue hover:bg-blue-50'}
+                   `}
+                 >
+                   {copied ? (
+                     <>
+                       <Check size={18} /> 已複製到剪貼簿！
+                     </>
+                   ) : (
+                     <>
+                       <Copy size={18} /> 點擊複製行程代碼
+                     </>
+                   )}
+                 </button>
+                 <p className="text-[10px] text-gray-400 text-center">
+                   複製後，請貼給朋友或存到筆記本備份。
+                 </p>
+              </div>
+
+              <div className="relative flex items-center py-2">
+                 <div className="flex-grow border-t border-gray-200"></div>
+                 <span className="flex-shrink-0 mx-4 text-gray-300 text-xs font-bold">OR</span>
+                 <div className="flex-grow border-t border-gray-200"></div>
+              </div>
+
+              {/* Import */}
+              <div className="space-y-2">
+                 <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1">
+                   <Download size={14} /> 匯入行程 (讀取)
+                 </label>
+                 <textarea 
+                   value={importCode}
+                   onChange={(e) => setImportCode(e.target.value)}
+                   placeholder="在此貼上行程代碼..."
+                   className="w-full p-3 h-24 text-xs font-mono border border-gray-200 rounded-lg outline-none focus:border-japan-blue resize-none"
+                 />
+                 <button 
+                   onClick={handleImport}
+                   disabled={!importCode}
+                   className="w-full bg-japan-blue text-white py-3 rounded-xl font-bold hover:bg-japan-blue/90 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm"
+                 >
+                   讀取代碼並覆蓋目前行程
+                 </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

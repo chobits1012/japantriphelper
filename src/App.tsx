@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf } from 'lucide-react';
 import { ITINERARY_DATA, WASHI_PATTERN, HERO_IMAGE } from './constants';
-import type { ItineraryDay, ExpenseItem, ChecklistItem, TripSeason } from './types';
+import type { ItineraryDay, ExpenseItem, ChecklistItem, TripSeason, TripSettings } from './types';
 import DetailPanel from './components/DetailModal';
 import AIGenerator from './components/AIGenerator';
 import TravelToolbox from './components/TravelToolbox';
@@ -12,12 +12,6 @@ const STORAGE_KEY = 'kansai-trip-2026-v2';
 const SETTINGS_KEY = 'kansai-trip-settings';
 const EXPENSE_KEY = 'kansai-trip-expenses';
 const CHECKLIST_KEY = 'kansai-trip-checklist';
-
-interface TripSettings {
-  name: string;
-  startDate: string;
-  season: TripSeason;
-}
 
 const App: React.FC = () => {
   // 1. Trip Settings (Name, Start Date, Season)
@@ -172,6 +166,10 @@ const App: React.FC = () => {
       <TravelToolbox 
         isOpen={isToolboxOpen}
         onClose={() => setIsToolboxOpen(false)}
+        tripSettings={tripSettings}
+        onUpdateTripSettings={setTripSettings}
+        itineraryData={itineraryData}
+        onUpdateItinerary={setItineraryData}
         expenses={expenses}
         onUpdateExpenses={setExpenses}
         checklist={checklist}

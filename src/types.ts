@@ -2,6 +2,12 @@
 export type EventCategory = 'sightseeing' | 'food' | 'transport' | 'shopping' | 'activity' | 'flight' | 'hotel';
 export type TripSeason = 'spring' | 'summer' | 'autumn' | 'winter';
 
+export interface TripSettings {
+  name: string;
+  startDate: string;
+  season: TripSeason;
+}
+
 export interface ItineraryEvent {
   time: string;
   title: string;
