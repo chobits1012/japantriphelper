@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Calendar, Map, Clock, ArrowRight, Plane, Flower2, Sun, Leaf, Snowflake } from 'lucide-react';
+import { Calendar, Map, Clock, ArrowRight, Flower2, Sun, Leaf, Snowflake, RotateCcw } from 'lucide-react';
 import type { TripSeason } from '../types';
 
 interface TripSetupProps {
@@ -9,9 +9,15 @@ interface TripSetupProps {
   onSetup: (name: string, startDate: string, days: number, season: TripSeason) => void;
 }
 
+// Helper to get local date string YYYY-MM-DD
+const getTodayString = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
   const [tripName, setTripName] = useState('');
-  const [startDate, setStartDate] = useState('');
+  const [startDate, setStartDate] = useState(getTodayString());
   const [duration, setDuration] = useState(5);
   const [season, setSeason] = useState<TripSeason>('spring');
 
@@ -24,6 +30,13 @@ const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
     }
     onSetup(tripName, startDate, duration, season);
     onClose();
+  };
+
+  const handleReset = () => {
+    setTripName('');
+    setStartDate(getTodayString());
+    setDuration(5);
+    setSeason('spring');
   };
 
   return (
@@ -141,12 +154,20 @@ const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
              開始規劃 <ArrowRight size={20} />
            </button>
            
-           <button 
-             onClick={onClose}
-             className="w-full text-gray-400 text-sm font-bold hover:text-gray-600 py-2"
-           >
-             取消
-           </button>
+           <div className="flex gap-3">
+             <button 
+               onClick={onClose}
+               className="flex-1 text-gray-400 text-sm font-bold hover:text-gray-600 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+             >
+               取消
+             </button>
+             <button 
+               onClick={handleReset}
+               className="flex-1 text-japan-blue text-sm font-bold hover:text-blue-600 py-2 border border-blue-100 rounded-lg hover:bg-blue-50 flex items-center justify-center gap-1"
+             >
+               <RotateCcw size={14} /> 重置
+             </button>
+           </div>
         </div>
       </div>
     </div>
