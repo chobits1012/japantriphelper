@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
@@ -154,7 +155,7 @@ const App: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (window.confirm('⚠️ 確定要恢復為預設的「關西冬之旅」嗎？\n\n目前的編輯與行程將會被覆蓋為預設值。')) {
+    if (window.confirm('⚠️ 確定要恢復為預設的「關西冬之旅」嗎？\n\n目前的編輯與行程將會被覆蓋為預設值。\n(記帳與檢查清單不會被刪除)')) {
       // Add IDs to default data
       const defaultWithIds = ITINERARY_DATA.map(d => ({ ...d, id: Math.random().toString(36).substr(2, 9) }));
       setItineraryData(defaultWithIds);

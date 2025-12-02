@@ -121,6 +121,12 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     onUpdateExpenses(expenses.filter(e => e.id !== id));
   };
 
+  const handleClearExpenses = () => {
+    if (window.confirm("確定要清空所有記帳紀錄嗎？此動作無法復原。")) {
+      onUpdateExpenses([]);
+    }
+  };
+
   const totalJPY = expenses.reduce((sum, item) => sum + item.amountJPY, 0);
 
   // Checklist Logic
@@ -128,6 +134,17 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     onUpdateChecklist(checklist.map(item => 
       item.id === id ? { ...item, checked: !item.checked } : item
     ));
+  };
+
+  const handleResetChecklist = () => {
+    if (window.confirm("確定要重置檢查清單嗎？這將會恢復為預設項目並清除自訂項目。")) {
+      const initialList = DEFAULT_CHECKLIST.map(text => ({
+        id: Math.random().toString(36).substr(2, 9),
+        text,
+        checked: false
+      }));
+      onUpdateChecklist(initialList);
+    }
   };
 
   // --- BACKUP & SHARE LOGIC ---
@@ -299,6 +316,19 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                 <Coins className="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rotate-12" />
               </div>
 
+              {/* Action Header */}
+              <div className="flex justify-between items-center">
+                 <span className="text-xs font-bold text-gray-400 uppercase">記帳明細</span>
+                 {expenses.length > 0 && (
+                   <button 
+                     onClick={handleClearExpenses}
+                     className="text-xs font-bold text-red-400 hover:text-red-500 flex items-center gap-1 bg-red-50 px-2 py-1 rounded-md"
+                   >
+                     <Trash2 size={12} /> 清空記帳
+                   </button>
+                 )}
+              </div>
+
               {/* Add Expense */}
               <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex gap-2">
                  <div className="flex-1 space-y-2">
@@ -422,10 +452,18 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
           {activeTab === 'checklist' && (
              <div className="space-y-2">
                 <div className="flex items-center justify-between mb-4">
-                   <h4 className="font-bold text-ink">出發前檢查</h4>
-                   <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
-                     {checklist.filter(i => i.checked).length} / {checklist.length}
-                   </span>
+                   <div className="flex items-center gap-3">
+                      <h4 className="font-bold text-ink">出發前檢查</h4>
+                      <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
+                        {checklist.filter(i => i.checked).length} / {checklist.length}
+                      </span>
+                   </div>
+                   <button 
+                     onClick={handleResetChecklist}
+                     className="text-xs font-bold text-japan-blue hover:text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md"
+                   >
+                     <RefreshCw size={12} /> 重置清單
+                   </button>
                 </div>
 
                 {checklist.map(item => (
