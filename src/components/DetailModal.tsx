@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
@@ -67,13 +68,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     const fetchWeather = async () => {
       if (!day.location) return;
 
+      // Handle locations like "滋賀 高島" by using the specific city name for better API results
+      const queryLocation = day.location.includes(' ') ? day.location.split(' ')[1] : day.location;
+
       setLoadingWeather(true);
       try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(day.location)}&count=1&language=zh&format=json`);
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryLocation)}&count=1&language=zh&format=json`);
         const geoData = await geoRes.json();
 
         if (!geoData.results || geoData.results.length === 0) {
-           console.warn("Location not found:", day.location);
+           console.warn("Location not found:", queryLocation);
            return;
         }
 
