@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronRight, GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, Trash2 } from 'lucide-react';
 import { ItineraryDay } from '../types';
 
 interface SortableDayCardProps {
@@ -54,25 +54,26 @@ export const SortableDayCard: React.FC<SortableDayCardProps> = ({
         ${!isHome && 'h-[80px] flex justify-center items-center lg:block lg:h-auto'}
       `}
     >
-      {/* Drag Handle & Delete Button Container */}
-      <div className={`absolute ${isHome ? 'right-2 top-2' : 'right-1 top-1'} flex items-center gap-1 z-20`}>
-         {/* Only show delete if there are multiple days to avoid empty itinerary */}
-         <button 
-            onClick={onDelete}
-            className={`p-1.5 rounded-full transition-colors ${isHome ? 'text-gray-300 hover:text-red-500 hover:bg-red-50' : isSelected ? 'text-white/50 hover:text-white' : 'text-gray-300 hover:text-red-500'}`}
-            title="刪除此日行程"
-         >
-            <Trash2 size={14} />
-         </button>
-         
-         <div 
-            {...attributes} 
-            {...listeners}
-            className={`cursor-grab active:cursor-grabbing p-1.5 rounded-md ${isHome ? 'text-gray-300 hover:text-gray-500 hover:bg-gray-100' : isSelected ? 'text-white/50 hover:text-white' : 'text-gray-300 hover:text-gray-500'}`}
-         >
-            <GripVertical size={16} />
-         </div>
-      </div>
+      {/* Drag Handle & Delete Button Container - ONLY SHOW ON HOME */}
+      {isHome && (
+        <div className="absolute right-2 top-2 flex items-center gap-1 z-20">
+           <button 
+              onClick={onDelete}
+              className="p-1.5 rounded-full transition-colors text-gray-300 hover:text-red-500 hover:bg-red-50"
+              title="刪除此日行程"
+           >
+              <Trash2 size={14} />
+           </button>
+           
+           <div 
+              {...attributes} 
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1.5 rounded-md text-gray-300 hover:text-gray-500 hover:bg-gray-100"
+           >
+              <GripVertical size={16} />
+           </div>
+        </div>
+      )}
 
       {/* Main Click Area */}
       <div onClick={onClick} className="cursor-pointer w-full h-full">
@@ -94,8 +95,6 @@ export const SortableDayCard: React.FC<SortableDayCardProps> = ({
               </div>
               <p className="text-sm text-gray-600 line-clamp-none">{day.desc}</p>
             </div>
-            {/* Chevron is decorative, keep it subtle */}
-            {/* <ChevronRight className="text-gray-300" /> */} 
           </div>
         )}
 
@@ -113,7 +112,7 @@ export const SortableDayCard: React.FC<SortableDayCardProps> = ({
               </span>
             </div>
 
-            <div className="hidden lg:block flex-1 min-w-0 pr-6">
+            <div className="hidden lg:block flex-1 min-w-0 pr-2">
               <div className="flex justify-between items-center mb-1">
                 <h3 className={`font-bold text-lg font-serif truncate ${isSelected ? 'text-white' : 'text-ink'}`}>
                   {day.title}
