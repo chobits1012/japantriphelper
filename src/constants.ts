@@ -125,7 +125,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       title: "海之京都",
       desc: "神隱少女海上列車、伊根舟屋",
       pass: true,
-      bg: "https://images.unsplash.com/photo-1554797584-073db172f3da?q=80&w=1000",
+      bg: "/day4.jpg",
       weatherIcon: 'rain',
       temp: "2°C / 6°C",
       location: "京都 伊根",
