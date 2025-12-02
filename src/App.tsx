@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import { ITINERARY_DATA, WASHI_PATTERN, HERO_IMAGE } from './constants';
@@ -11,6 +10,7 @@ import AIGenerator from './components/AIGenerator';
 import TravelToolbox from './components/TravelToolbox';
 import TripSetup from './components/TripSetup';
 import { SortableDayCard } from './components/SortableDayCard';
+import { DayCard } from './components/DayCard';
 
 const STORAGE_KEY = 'kansai-trip-2026-v3';
 const SETTINGS_KEY = 'kansai-trip-settings';
@@ -46,6 +46,9 @@ const App: React.FC = () => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isToolboxOpen, setIsToolboxOpen] = useState(false);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
+  
+  // Track active drag item for Overlay
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
   // DnD Sensors
   const sensors = useSensors(
@@ -88,9 +91,14 @@ const App: React.FC = () => {
     });
   };
 
-  // Drag End Handler
+  // Drag Handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveDragId(null);
 
     if (over && active.id !== over.id) {
       setItineraryData((items) => {
@@ -223,6 +231,7 @@ const App: React.FC = () => {
 
   const isHome = selectedDayIndex === null;
   const selectedDay = selectedDayIndex !== null ? itineraryData[selectedDayIndex] : null;
+  const activeDragItem = activeDragId ? itineraryData.find(d => d.id === activeDragId) : null;
 
   const getSeasonIcon = (season: TripSeason, size: number, className?: string) => {
     switch(season) {
@@ -307,7 +316,12 @@ const App: React.FC = () => {
           </div>
 
           {/* List with Drag and Drop */}
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext 
+            sensors={sensors} 
+            collisionDetection={closestCenter} 
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
             <div className={`flex-1 overflow-y-auto overflow-x-hidden no-scrollbar ${isHome ? 'pb-28 px-4 pt-4' : 'pb-60 lg:pb-28'}`}>
               <div className={`${isHome ? 'max-w-2xl mx-auto' : ''}`}>
                 <SortableContext items={itineraryData.map(d => d.id)} strategy={verticalListSortingStrategy}>
@@ -349,6 +363,19 @@ const App: React.FC = () => {
                 {isHome && <div className="h-20" />}
               </div>
             </div>
+
+            {/* Drag Overlay for Smooth Animation */}
+            <DragOverlay>
+              {activeDragItem ? (
+                <DayCard
+                  day={activeDragItem}
+                  isSelected={false}
+                  isHome={isHome}
+                  getPassShortLabel={getPassShortLabel}
+                  isOverlay
+                />
+              ) : null}
+            </DragOverlay>
           </DndContext>
           
           {/* Action Buttons */}
