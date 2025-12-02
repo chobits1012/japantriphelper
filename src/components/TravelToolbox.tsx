@@ -589,7 +589,12 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                           className="text-sm font-bold p-1 border border-japan-blue rounded outline-none"
                                           autoFocus
                                        />
-                                       <button onClick={() => handleSaveTitle(cat.id)} className="text-japan-blue"><Save size={16} /></button>
+                                       <button 
+                                          onClick={() => handleSaveTitle(cat.id)} 
+                                          className="p-1.5 bg-blue-50 text-japan-blue rounded hover:bg-japan-blue hover:text-white transition-colors"
+                                       >
+                                          <Save size={16} />
+                                       </button>
                                     </div>
                                  ) : (
                                     <div className="flex items-center gap-2 group">
