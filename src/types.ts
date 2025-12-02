@@ -58,3 +58,10 @@ export interface ChecklistItem {
   text: string;
   checked: boolean;
 }
+
+export interface ChecklistCategory {
+  id: string;
+  title: string;
+  items: ChecklistItem[];
+  isCollapsed?: boolean;
+}

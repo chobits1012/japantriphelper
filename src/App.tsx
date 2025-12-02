@@ -5,7 +5,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import { ITINERARY_DATA, WASHI_PATTERN, HERO_IMAGE } from './constants';
-import type { ItineraryDay, ExpenseItem, ChecklistItem, TripSeason, TripSettings } from './types';
+import type { ItineraryDay, ExpenseItem, ChecklistCategory, TripSeason, TripSettings } from './types';
 import DetailPanel from './components/DetailModal';
 import AIGenerator from './components/AIGenerator';
 import TravelToolbox from './components/TravelToolbox';
@@ -13,7 +13,7 @@ import TripSetup from './components/TripSetup';
 import { SortableDayCard } from './components/SortableDayCard';
 import { DayCard } from './components/DayCard';
 
-const STORAGE_KEY = 'kansai-trip-2026-v3';
+const STORAGE_KEY = 'kansai-trip-2026-v4';
 const SETTINGS_KEY = 'kansai-trip-settings';
 const EXPENSE_KEY = 'kansai-trip-expenses';
 const CHECKLIST_KEY = 'kansai-trip-checklist';
@@ -38,9 +38,28 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [checklist, setChecklist] = useState<ChecklistItem[]>(() => {
+  // 3. Checklist State (Categorized + Auto Migration)
+  const [checklist, setChecklist] = useState<ChecklistCategory[]>(() => {
     const saved = localStorage.getItem(CHECKLIST_KEY);
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      
+      // MIGRATION LOGIC: Check if it's the old flat format (array of items with 'text')
+      if (Array.isArray(parsed) && parsed.length > 0 && 'text' in parsed[0]) {
+         return [{
+            id: 'migrated-default',
+            title: '未分類 (舊資料)',
+            items: parsed,
+            isCollapsed: false
+         }];
+      }
+      
+      // New format (array of categories)
+      if (Array.isArray(parsed) && (parsed.length === 0 || 'items' in parsed[0])) {
+         return parsed;
+      }
+    }
+    return []; // Empty, Toolbox will initialize default categories
   });
 
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);

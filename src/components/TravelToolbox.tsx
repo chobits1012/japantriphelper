@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Wallet, Calculator, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson } from 'lucide-react';
+import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson, ChevronDown, ChevronRight, FolderPlus } from 'lucide-react';
 import LZString from 'lz-string';
-import type { ExpenseItem, ChecklistItem, TripSettings, ItineraryDay } from '../types';
+import type { ExpenseItem, ChecklistCategory, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
 interface TravelToolboxProps {
   isOpen: boolean;
@@ -13,14 +13,16 @@ interface TravelToolboxProps {
   onUpdateItinerary: (data: ItineraryDay[]) => void;
   expenses: ExpenseItem[];
   onUpdateExpenses: (items: ExpenseItem[]) => void;
-  checklist: ChecklistItem[];
-  onUpdateChecklist: (items: ChecklistItem[]) => void;
+  checklist: ChecklistCategory[];
+  onUpdateChecklist: (categories: ChecklistCategory[]) => void;
 }
 
-const DEFAULT_CHECKLIST = [
-  "護照 (效期6個月以上)", "JR PASS 兌換券", "日幣現金", "信用卡 (海外回饋高)", 
-  "SIM卡 / Roaming 開通", "行動電源", "充電線 / 轉接頭", "個人藥品", 
-  "保暖衣物 / 發熱衣", "好走的鞋子", "Visit Japan Web 填寫"
+const DEFAULT_CATEGORIES = [
+  { title: "證件/錢財", items: ["護照 (效期6個月以上)", "JR PASS 兌換券", "日幣現金", "信用卡 (海外回饋高)"] },
+  { title: "衣物/穿搭", items: ["換洗衣物", "好走的鞋子", "保暖衣物/發熱衣", "帽子/太陽眼鏡"] },
+  { title: "電子產品", items: ["手機", "充電器", "行動電源", "網卡/eSIM/漫遊", "轉接頭 (日本雙孔)"] },
+  { title: "盥洗/藥品", items: ["個人藥品", "牙刷牙膏", "保養品/化妝品"] },
+  { title: "其他", items: ["雨傘", "筆", "Visit Japan Web 截圖"] }
 ];
 
 const TravelToolbox: React.FC<TravelToolboxProps> = ({ 
@@ -49,15 +51,14 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Checklist State ---
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [showNewCatInput, setShowNewCatInput] = useState(false);
+
   // Initialize Checklist if empty
   useEffect(() => {
     if (checklist.length === 0) {
-      const initialList = DEFAULT_CHECKLIST.map(text => ({
-        id: Math.random().toString(36).substr(2, 9),
-        text,
-        checked: false
-      }));
-      onUpdateChecklist(initialList);
+      handleResetChecklist(false); // Init without confirm
     }
   }, []);
 
@@ -129,22 +130,86 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
 
   const totalJPY = expenses.reduce((sum, item) => sum + item.amountJPY, 0);
 
-  // Checklist Logic
-  const toggleCheck = (id: string) => {
-    onUpdateChecklist(checklist.map(item => 
-      item.id === id ? { ...item, checked: !item.checked } : item
-    ));
-  };
+  // --- CHECKLIST LOGIC ---
 
-  const handleResetChecklist = () => {
-    if (window.confirm("確定要重置檢查清單嗎？這將會恢復為預設項目並清除自訂項目。")) {
-      const initialList = DEFAULT_CHECKLIST.map(text => ({
+  const handleResetChecklist = (confirm = true) => {
+    if (!confirm || window.confirm("確定要重置檢查清單嗎？這將會恢復為預設項目並清除自訂項目。")) {
+      const initialList: ChecklistCategory[] = DEFAULT_CATEGORIES.map(cat => ({
         id: Math.random().toString(36).substr(2, 9),
-        text,
-        checked: false
+        title: cat.title,
+        items: cat.items.map(text => ({
+           id: Math.random().toString(36).substr(2, 9),
+           text,
+           checked: false
+        })),
+        isCollapsed: false
       }));
       onUpdateChecklist(initialList);
     }
+  };
+
+  const toggleCategoryCollapse = (catId: string) => {
+    onUpdateChecklist(checklist.map(cat => 
+      cat.id === catId ? { ...cat, isCollapsed: !cat.isCollapsed } : cat
+    ));
+  };
+
+  const handleDeleteCategory = (catId: string) => {
+    if (window.confirm("確定要刪除這個分類嗎？")) {
+      onUpdateChecklist(checklist.filter(c => c.id !== catId));
+    }
+  };
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return;
+    const newCat: ChecklistCategory = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: newCategoryName,
+      items: [],
+      isCollapsed: false
+    };
+    onUpdateChecklist([...checklist, newCat]);
+    setNewCategoryName('');
+    setShowNewCatInput(false);
+  };
+
+  const handleAddItem = (catId: string, text: string) => {
+    if (!text.trim()) return;
+    onUpdateChecklist(checklist.map(cat => {
+      if (cat.id === catId) {
+        return {
+          ...cat,
+          items: [...cat.items, { id: Math.random().toString(36).substr(2, 9), text, checked: false }]
+        };
+      }
+      return cat;
+    }));
+  };
+
+  const handleToggleItem = (catId: string, itemId: string) => {
+    onUpdateChecklist(checklist.map(cat => {
+      if (cat.id === catId) {
+        return {
+          ...cat,
+          items: cat.items.map(item => 
+            item.id === itemId ? { ...item, checked: !item.checked } : item
+          )
+        };
+      }
+      return cat;
+    }));
+  };
+
+  const handleDeleteItem = (catId: string, itemId: string) => {
+    onUpdateChecklist(checklist.map(cat => {
+      if (cat.id === catId) {
+        return {
+          ...cat,
+          items: cat.items.filter(item => item.id !== itemId)
+        };
+      }
+      return cat;
+    }));
   };
 
   // --- BACKUP & SHARE LOGIC ---
@@ -155,16 +220,14 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       itineraryData,
       expenses,
       checklist,
-      version: 1,
+      version: 2, // Bumped version for categorized checklist
       timestamp: new Date().toISOString()
     };
   };
 
-  // 1. Copy Compressed Code
   const handleCopyCode = () => {
     const data = getExportData();
     const jsonString = JSON.stringify(data);
-    // Compress string to make it shorter for messaging apps
     const compressed = LZString.compressToEncodedURIComponent(jsonString);
     
     navigator.clipboard.writeText(compressed);
@@ -172,7 +235,6 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // 2. Download JSON File
   const handleDownloadFile = () => {
     const data = getExportData();
     const jsonString = JSON.stringify(data, null, 2);
@@ -188,7 +250,6 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  // Common Import Processor
   const processImportData = (data: any) => {
      if (!data.itineraryData || !data.tripSettings) {
         throw new Error("無效的行程資料格式");
@@ -198,7 +259,19 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
         onUpdateTripSettings(data.tripSettings);
         onUpdateItinerary(data.itineraryData);
         if (data.expenses) onUpdateExpenses(data.expenses);
-        if (data.checklist) onUpdateChecklist(data.checklist);
+        
+        // Handle checklist migration during import if needed
+        if (data.checklist) {
+           const cl = data.checklist;
+           if (Array.isArray(cl) && cl.length > 0 && 'text' in cl[0]) {
+              // Old format import
+              onUpdateChecklist([{
+                 id: 'imported-legacy', title: '匯入的清單', items: cl, isCollapsed: false
+              }]);
+           } else {
+              onUpdateChecklist(cl);
+           }
+        }
         
         alert("匯入成功！");
         setImportCode('');
@@ -206,21 +279,14 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       }
   };
 
-  // 3. Import from Code (Auto-detect compressed or raw)
   const handleImportCode = () => {
     try {
       if (!importCode.trim()) return;
-      
       let jsonString = importCode.trim();
-      
-      // Try to decompress if it doesn't look like JSON
       if (!jsonString.startsWith('{')) {
         const decompressed = LZString.decompressFromEncodedURIComponent(jsonString);
-        if (decompressed) {
-           jsonString = decompressed;
-        }
+        if (decompressed) jsonString = decompressed;
       }
-
       const data = JSON.parse(jsonString);
       processImportData(data);
     } catch (e) {
@@ -228,11 +294,9 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     }
   };
 
-  // 4. Import from File
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -242,7 +306,6 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       } catch (err) {
         alert("讀取檔案失敗：格式錯誤");
       }
-      // Reset input value so same file can be selected again if needed
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsText(file);
@@ -448,61 +511,130 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
              </div>
           )}
 
-          {/* --- CHECKLIST TAB --- */}
+          {/* --- CHECKLIST TAB (Categorized) --- */}
           {activeTab === 'checklist' && (
-             <div className="space-y-2">
-                <div className="flex items-center justify-between mb-4">
-                   <div className="flex items-center gap-3">
-                      <h4 className="font-bold text-ink">出發前檢查</h4>
+             <div className="space-y-4 pb-20">
+                <div className="flex items-center justify-between mb-2">
+                   <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-ink">檢查清單</h4>
                       <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
-                        {checklist.filter(i => i.checked).length} / {checklist.length}
+                        {checklist.reduce((acc, cat) => acc + cat.items.filter(i => i.checked).length, 0)} / {checklist.reduce((acc, cat) => acc + cat.items.length, 0)}
                       </span>
                    </div>
                    <button 
-                     onClick={handleResetChecklist}
-                     className="text-xs font-bold text-japan-blue hover:text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md"
+                     onClick={() => handleResetChecklist(true)}
+                     className="text-xs font-bold text-gray-400 hover:text-japan-blue flex items-center gap-1"
                    >
-                     <RefreshCw size={12} /> 重置清單
+                     <RefreshCw size={12} /> 重置
                    </button>
                 </div>
 
-                {checklist.map(item => (
-                  <div 
-                    key={item.id} 
-                    onClick={() => toggleCheck(item.id)}
-                    className={`
-                      flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
-                      ${item.checked ? 'bg-gray-50 border-gray-100' : 'bg-white border-gray-200 hover:border-japan-blue/50'}
-                    `}
-                  >
-                     <div className={`
-                        w-5 h-5 rounded border flex items-center justify-center transition-colors
-                        ${item.checked ? 'bg-japan-blue border-japan-blue text-white' : 'border-gray-300 bg-white'}
-                     `}>
-                        {item.checked && <CheckSquare size={14} />}
-                     </div>
-                     <span className={`text-sm font-medium ${item.checked ? 'text-gray-400 line-through' : 'text-ink'}`}>
-                       {item.text}
-                     </span>
-                  </div>
-                ))}
-                
-                <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                   <input 
-                     type="text" 
-                     placeholder="新增自訂項目..." 
-                     className="flex-1 text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-japan-blue"
-                     onKeyDown={(e) => {
-                       if (e.key === 'Enter') {
-                         const val = (e.target as HTMLInputElement).value;
-                         if (val) {
-                           onUpdateChecklist([...checklist, { id: Math.random().toString(), text: val, checked: false }]);
-                           (e.target as HTMLInputElement).value = '';
-                         }
-                       }
-                     }}
-                   />
+                {/* Categories */}
+                <div className="space-y-4">
+                   {checklist.map(cat => {
+                      const total = cat.items.length;
+                      const checkedCount = cat.items.filter(i => i.checked).length;
+                      const progress = total > 0 ? (checkedCount / total) * 100 : 0;
+
+                      return (
+                        <div key={cat.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                           {/* Cat Header */}
+                           <div 
+                             onClick={() => toggleCategoryCollapse(cat.id)}
+                             className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                           >
+                              <div className="flex items-center gap-2">
+                                 {cat.isCollapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                                 <span className="font-bold text-sm text-ink">{cat.title}</span>
+                                 <span className="text-xs text-gray-400 font-mono">({checkedCount}/{total})</span>
+                              </div>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                                className="text-gray-300 hover:text-red-400 p-1"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                           </div>
+                           
+                           {/* Progress Bar */}
+                           <div className="h-1 bg-gray-100 w-full">
+                              <div className="h-full bg-japan-blue transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                           </div>
+
+                           {/* Cat Items */}
+                           {!cat.isCollapsed && (
+                             <div className="p-3 space-y-2">
+                                {cat.items.map(item => (
+                                  <div 
+                                    key={item.id} 
+                                    onClick={() => handleToggleItem(cat.id, item.id)}
+                                    className="flex items-center justify-between group cursor-pointer"
+                                  >
+                                     <div className="flex items-center gap-3">
+                                        <div className={`
+                                           w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0
+                                           ${item.checked ? 'bg-japan-blue border-japan-blue text-white' : 'border-gray-300 bg-white'}
+                                        `}>
+                                           {item.checked && <Check size={10} />}
+                                        </div>
+                                        <span className={`text-sm ${item.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                                          {item.text}
+                                        </span>
+                                     </div>
+                                     <button 
+                                       onClick={(e) => { e.stopPropagation(); handleDeleteItem(cat.id, item.id); }}
+                                       className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-opacity"
+                                     >
+                                       <X size={14} />
+                                     </button>
+                                  </div>
+                                ))}
+                                
+                                {/* Add Item Input */}
+                                <div className="mt-2 pt-2 border-t border-gray-50 flex items-center gap-2">
+                                   <Plus size={14} className="text-gray-300" />
+                                   <input 
+                                     type="text" 
+                                     placeholder="新增項目..." 
+                                     className="flex-1 text-xs bg-transparent outline-none py-1"
+                                     onKeyDown={(e) => {
+                                       if (e.key === 'Enter') {
+                                         const val = (e.target as HTMLInputElement).value;
+                                         handleAddItem(cat.id, val);
+                                         (e.target as HTMLInputElement).value = '';
+                                       }
+                                     }}
+                                   />
+                                </div>
+                             </div>
+                           )}
+                        </div>
+                      );
+                   })}
                 </div>
+
+                {/* Add Category Button */}
+                {showNewCatInput ? (
+                   <div className="flex gap-2 items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
+                      <input 
+                        type="text" 
+                        value={newCategoryName}
+                        onChange={e => setNewCategoryName(e.target.value)}
+                        placeholder="新分類名稱..."
+                        className="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-sm outline-none focus:border-japan-blue"
+                        autoFocus
+                      />
+                      <button onClick={handleAddCategory} className="text-japan-blue font-bold text-sm">新增</button>
+                      <button onClick={() => setShowNewCatInput(false)} className="text-gray-400"><X size={16} /></button>
+                   </div>
+                ) : (
+                   <button 
+                     onClick={() => setShowNewCatInput(true)}
+                     className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-japan-blue hover:text-japan-blue hover:bg-blue-50 transition-all flex items-center justify-center gap-2 font-bold text-sm"
+                   >
+                     <FolderPlus size={16} /> 新增分類
+                   </button>
+                )}
              </div>
           )}
 
