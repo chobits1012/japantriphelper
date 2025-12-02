@@ -252,7 +252,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       accommodation: { name: "xx飯店", checkIn: "12:30" },
       events: [
           { time: "11:00", title: "前往大阪", desc: "搭乘京阪電車或 JR", category: 'transport' },
-          { time: "12:30", title: "Check-in: APA 淀屋橋", desc: "寄放行李 (11號出口)", category: 'hotel', mapQuery: "APA Hotel Yodoyabashi" },
+          { time: "12:30", title: "Check-in:xx飯店 ", desc: "寄放行李 (11號出口)", category: 'hotel', mapQuery: "APA Hotel Yodoyabashi" },
           { time: "14:00", title: "道頓堀 & 心齋橋", desc: "跑跑人看板，購物模式全開", category: 'shopping', mapQuery: "Dotonbori Glico Man Sign" },
           { time: "19:00", title: "飯店浴場", desc: "享受 大浴場", category: 'activity' }
       ]
