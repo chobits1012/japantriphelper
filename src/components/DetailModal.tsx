@@ -36,6 +36,64 @@ const getLiveWeatherIcon = (code: number, size = 16) => {
   return <Cloud className="text-gray-400" size={size} />;
 };
 
+// Helper to map common Chinese location names to English for better API accuracy
+const getLocationQuery = (loc: string) => {
+  const mapping: Record<string, string> = {
+    '京都': 'Kyoto',
+    '大阪': 'Osaka',
+    '東京': 'Tokyo',
+    '奈良': 'Nara',
+    '神戶': 'Kobe',
+    '姬路': 'Himeji',
+    '城崎': 'Kinosaki',
+    '城崎溫泉': 'Kinosaki',
+    '兵庫': 'Hyogo',
+    '和歌山': 'Wakayama',
+    '白濱': 'Shirahama',
+    '滋賀': 'Shiga',
+    '近江八幡': 'Omihachiman',
+    '高島': 'Takashima',
+    '白鬚': 'Takashima', // Shirahige shrine is in Takashima
+    '伊根': 'Ine',
+    '天橋立': 'Miyazu',
+    '舞鶴': 'Maizuru',
+    '岡山': 'Okayama',
+    '倉敷': 'Kurashiki',
+    '廣島': 'Hiroshima',
+    '宮島': 'Hatsukaichi',
+    '福岡': 'Fukuoka',
+    '博多': 'Fukuoka',
+    '札幌': 'Sapporo',
+    '小樽': 'Otaru',
+    '函館': 'Hakodate',
+    '富良野': 'Furano',
+    '美瑛': 'Biei',
+    '名古屋': 'Nagoya',
+    '高山': 'Takayama',
+    '白川鄉': 'Shirakawa',
+    '金澤': 'Kanazawa',
+    '沖繩': 'Naha',
+    '那霸': 'Naha',
+    '嵐山': 'Kyoto',
+    '宇治': 'Uji',
+    '關西機場': 'Izumisano',
+    '成田機場': 'Narita',
+    '羽田機場': 'Ota'
+  };
+
+  for (const key in mapping) {
+    if (loc.includes(key)) return mapping[key];
+  }
+
+  // Fallback: If it contains spaces, take the last part (usually the specific city)
+  if (loc.includes(' ')) {
+     const parts = loc.split(' ');
+     return parts[parts.length - 1]; 
+  }
+
+  return loc;
+};
+
 const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHome, onNext, onPrev, hasPrev, hasNext, className }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<ItineraryDay>(day);
@@ -68,12 +126,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     const fetchWeather = async () => {
       if (!day.location) return;
 
-      // Handle locations like "滋賀 高島" by using the specific city name for better API results
-      const queryLocation = day.location.includes(' ') ? day.location.split(' ')[1] : day.location;
+      // Use the helper to get a better query string
+      const queryLocation = getLocationQuery(day.location);
 
       setLoadingWeather(true);
       try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryLocation)}&count=1&language=zh&format=json`);
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryLocation)}&count=1&language=en&format=json`);
         const geoData = await geoRes.json();
 
         if (!geoData.results || geoData.results.length === 0) {
@@ -227,7 +285,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         </>
       )}
 
-      {/* Floating Action Buttons (Absolute Top Right) */}
+      {/* Floating Action Buttons (Absolute Top Right with Safe Area Support) */}
       <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-5 md:top-8 md:right-8 z-50 flex items-center gap-2 transition-all">
           {isEditing ? (
             <>
