@@ -77,12 +77,12 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "4°C / 9°C",
       location: "京都",
       tips: "出關時間約需 1-1.5 小時，記得先在機場兌換 JR Pass。",
-      accommodation: { name: "Kyoto Sakura Terrace", checkIn: "22:00" },
+      accommodation: { name: "xx飯店", checkIn: "22:00" },
       events: [
-          { time: "15:40", title: "TPE 起飛 (D7378)", desc: "AirAsia X 桃園第一航廈", category: 'flight', mapQuery: "Taoyuan International Airport" },
-          { time: "19:20", title: "抵達關西機場 (KIX)", desc: "入境、領取行李", category: 'flight', mapQuery: "Kansai International Airport" },
+          { time: "15:00", title: "TPE 起飛 ", desc: "桃園第一航廈", category: 'flight', mapQuery: "Taoyuan International Airport" },
+          { time: "19:00", title: "抵達關西機場 (KIX)", desc: "入境、領取行李", category: 'flight', mapQuery: "Kansai International Airport" },
           { time: "20:30", title: "Haruka 特急列車", desc: "前往京都站 (約75分鐘)", transport: "Haruka", category: 'transport' },
-          { time: "22:00", title: "Check-in", desc: "Kyoto Sakura Terrace", category: 'hotel', mapQuery: "Sakura Terrace Kyoto" }
+          { time: "22:00", title: "Check-in", desc: "xx飯店", category: 'hotel', mapQuery: "xxhotel" }
       ]
   },
   {
@@ -96,7 +96,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "1°C / 7°C",
       location: "京都",
       tips: "伏見稻荷建議 9 點前抵達，避開大量遊客人潮。",
-      accommodation: { name: "Kyoto Sakura Terrace" },
+      accommodation: { name: "xx飯店" },
       events: [
           { time: "09:00", title: "伏見稻荷大社", desc: "早晨參拜，千本鳥居人潮較少", highlight: true, category: 'sightseeing', mapQuery: "Fushimi Inari Taisha" },
           { time: "12:00", title: "清水寺 & 二三年坂", desc: "經典京都風情散步", category: 'sightseeing', mapQuery: "Kiyomizu-dera" },
@@ -114,7 +114,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "0°C / 5°C",
       location: "滋賀 高島",
       tips: "白鬚神社附近無人行道，拍照時請務必注意來車。",
-      accommodation: { name: "Kyoto Sakura Terrace" },
+      accommodation: { name: "xx飯店" },
       events: [
           { time: "09:00", title: "出發前往近江高島", desc: "JR 湖西線", transport: "JR Pass Day 1", category: 'transport' },
           { time: "10:00", title: "白鬚神社", desc: "必拍！琵琶湖中的海上鳥居", highlight: true, category: 'sightseeing', mapQuery: "Shirahige Shrine" },
@@ -134,12 +134,12 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "2°C / 6°C",
       location: "京都 伊根",
       tips: "丹後鐵道班次較少，請務必準時抵達車站。",
-      accommodation: { name: "伊根大平莊", checkIn: "15:00" },
+      accommodation: { name: "xx舟屋", checkIn: "15:00" },
       events: [
           { time: "08:30", title: "前往西舞鶴站", desc: "搭乘 JR 特急 Hashidate", transport: "JR Pass Day 2", category: 'transport' },
           { time: "10:30", title: "丹後鐵道觀光列車", desc: "行經「由良川橋樑」，體驗海上行駛的感覺", highlight: true, category: 'sightseeing', mapQuery: "Yura River Bridge" },
           { time: "11:40", title: "抵達天橋立站", desc: "轉乘巴士前往伊根", category: 'transport' },
-          { time: "15:00", title: "Check-in: 伊根大平莊", desc: "入住舟屋，體驗臨海而居", category: 'hotel', mapQuery: "Ine Taiheiso" },
+          { time: "15:00", title: "xx舟屋", desc: "入住舟屋，體驗臨海而居", category: 'hotel', mapQuery: "Ine Taiheiso" },
           { time: "18:00", title: "舟屋晚餐", desc: "享受在地海鮮料理 (需準時)", category: 'food' }
       ]
   },
@@ -154,12 +154,12 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "-1°C / 4°C",
       location: "兵庫 城崎溫泉",
       tips: "城崎溫泉適合穿浴衣散步，記得跟飯店拿七外湯 Pass。",
-      accommodation: { name: "大西屋水翔苑", checkIn: "15:30" },
+      accommodation: { name: "xx飯店", checkIn: "15:30" },
       events: [
           { time: "08:00", title: "伊根早餐", desc: "晨間伊根灣散步", category: 'food' },
           { time: "09:30", title: "返回天橋立", desc: "搭乘纜車前往 Viewland 看飛龍觀", category: 'sightseeing', mapQuery: "Amanohashidate Viewland" },
           { time: "13:40", title: "移動至城崎溫泉", desc: "Hashidate ➔ Konotori (豐岡轉車)", transport: "JR Pass Day 3", category: 'transport' },
-          { time: "15:30", title: "Check-in: 大西屋水翔苑", desc: "換上浴衣", category: 'hotel', mapQuery: "Onishiya Suishoen" },
+          { time: "15:30", title: "Check-in: xx飯店", desc: "換上浴衣", category: 'hotel', mapQuery: "Onishiya Suishoen" },
           { time: "16:30", title: "七外湯巡禮", desc: "持 Pass 免費泡湯，晚餐享用松葉蟹", highlight: true, category: 'activity', mapQuery: "Kinosaki Onsen" }
       ]
   },
@@ -174,12 +174,12 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "3°C / 11°C",
       location: "岡山",
       tips: "今日移動距離較長，建議在車上準備些零食。",
-      accommodation: { name: "Livemax Okayama", checkIn: "18:00" },
+      accommodation: { name: "xx飯店", checkIn: "18:00" },
       events: [
           { time: "10:00", title: "城崎晨間時光", desc: "最後採買溫泉街土產", category: 'shopping' },
           { time: "11:00", title: "前往岡山", desc: "特急 ➔ 姬路 ➔ 新幹線", transport: "JR Pass Day 4", category: 'transport' },
           { time: "14:00", title: "姬路城 (選配)", desc: "若有體力可中途下車參觀", category: 'sightseeing', mapQuery: "Himeji Castle" },
-          { time: "18:00", title: "Check-in: Livemax Okayama", desc: "岡山站西口", category: 'hotel', mapQuery: "Hotel Livemax Okayama" },
+          { time: "18:00", title: "Check-in: xx飯店", desc: "岡山站西口", category: 'hotel', mapQuery: "Hotel Livemax Okayama" },
           { time: "19:00", title: "Aeon Mall 岡山", desc: "站前超大購物中心晚餐", category: 'shopping', mapQuery: "Aeon Mall Okayama" }
       ]
   },
@@ -194,11 +194,11 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "4°C / 12°C",
       location: "岡山 倉敷",
       tips: "倉敷美觀地區有很多精緻的牛仔布製品店。",
-      accommodation: { name: "Kyoto Sakura Terrace", checkIn: "16:00" },
+      accommodation: { name: "xx飯店", checkIn: "16:00" },
       events: [
           { time: "09:00", title: "倉敷美觀地區", desc: "白壁土藏群漫步，江戶風情", category: 'sightseeing', mapQuery: "Kurashiki Bikan Historical Quarter" },
           { time: "14:00", title: "返回京都", desc: "搭乘新幹線 (Pass 最後一日)", transport: "JR Pass Day 5", category: 'transport' },
-          { time: "16:00", title: "Check-in: Sakura Terrace", desc: "回到熟悉的京都飯店", category: 'hotel' }
+          { time: "16:00", title: "Check-in: xx飯店", desc: "回到熟悉的京都飯店", category: 'hotel' }
       ]
   },
   {
@@ -212,7 +212,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "3°C / 8°C",
       location: "京都",
       tips: "Mipig Cafe 務必提前預約，現場很難有位子。",
-      accommodation: { name: "Kyoto Sakura Terrace" },
+      accommodation: { name: "xx飯店" },
       events: [
           { time: "10:00", title: "錦市場", desc: "京都的廚房，吃點心", category: 'food', mapQuery: "Nishiki Market" },
           { time: "13:00", title: "Mipig Cafe", desc: "預約制：與迷你豬零距離互動", highlight: true, category: 'activity', mapQuery: "mipig cafe kyoto" },
@@ -231,7 +231,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "2°C / 7°C",
       location: "京都 嵐山",
       tips: "嵐山週末人潮眾多，小火車建議先上網預約。",
-      accommodation: { name: "Kyoto Sakura Terrace" },
+      accommodation: { name: "xx飯店" },
       events: [
           { time: "09:00", title: "嵐山地區", desc: "渡月橋、竹林小徑", category: 'sightseeing', mapQuery: "Arashiyama Bamboo Grove" },
           { time: "13:00", title: "嵯峨野觀光小火車", desc: "保津川溪谷美景", category: 'activity', mapQuery: "Sagano Romantic Train" },
@@ -248,13 +248,13 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       weatherIcon: 'sunny',
       temp: "5°C / 10°C",
       location: "大阪",
-      tips: "大阪飯店位於淀屋橋，交通便利，可善用御堂筋線。",
-      accommodation: { name: "APA 淀屋橋", checkIn: "12:30" },
+      tips: "大阪飯店位於xxx，交通便利，可善用御堂筋線。",
+      accommodation: { name: "xx飯店", checkIn: "12:30" },
       events: [
           { time: "11:00", title: "前往大阪", desc: "搭乘京阪電車或 JR", category: 'transport' },
           { time: "12:30", title: "Check-in: APA 淀屋橋", desc: "寄放行李 (11號出口)", category: 'hotel', mapQuery: "APA Hotel Yodoyabashi" },
           { time: "14:00", title: "道頓堀 & 心齋橋", desc: "跑跑人看板，購物模式全開", category: 'shopping', mapQuery: "Dotonbori Glico Man Sign" },
-          { time: "19:00", title: "飯店溫泉", desc: "享受 B1 天然溫泉大浴場", category: 'activity' }
+          { time: "19:00", title: "飯店浴場", desc: "享受 大浴場", category: 'activity' }
       ]
   },
   {
@@ -268,7 +268,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       temp: "4°C / 11°C",
       location: "大阪",
       tips: "梅田藍天大廈看夜景建議在日落前半小時抵達。",
-      accommodation: { name: "APA 淀屋橋" },
+      accommodation: { name: "xx飯店" },
       events: [
           { time: "10:00", title: "大阪城公園", desc: "天守閣巡禮", category: 'sightseeing', mapQuery: "Osaka Castle" },
           { time: "15:00", title: "梅田商圈", desc: "最後補貨 (藥妝、電器)", category: 'shopping', mapQuery: "Umeda Station" },
@@ -290,8 +290,8 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       events: [
           { time: "Morning", title: "中之島散步", desc: "悠閒早餐，整理行李", category: 'sightseeing', mapQuery: "Nakanoshima Park" },
           { time: "15:30", title: "前往關西機場", desc: "南海電鐵 Rapi:t 或 Haruka", transport: "Airport", category: 'transport' },
-          { time: "20:45", title: "起飛 (D7379)", desc: "AirAsia X 返回台北", category: 'flight', mapQuery: "Kansai International Airport" },
-          { time: "23:05", title: "抵達台北 (TPE)", desc: "桃園機場第一航廈，旅程圓滿結束", category: 'flight', mapQuery: "Taoyuan International Airport" }
+          { time: "19:00", title: "起飛 ", desc: "返回台北", category: 'flight', mapQuery: "Kansai International Airport" },
+          { time: "22:20", title: "抵達台北 (TPE)", desc: "桃園機場第一航廈，旅程圓滿結束", category: 'flight', mapQuery: "Taoyuan International Airport" }
       ]
   }
 ];
