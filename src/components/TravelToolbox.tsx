@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson, ChevronDown, ChevronRight, FolderPlus } from 'lucide-react';
+import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save } from 'lucide-react';
 import LZString from 'lz-string';
 import type { ExpenseItem, ChecklistCategory, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
@@ -54,6 +54,13 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   // --- Checklist State ---
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCatInput, setShowNewCatInput] = useState(false);
+  
+  // State for adding items per category: { [catId]: "item text" }
+  const [newItemInputs, setNewItemInputs] = useState<Record<string, string>>({});
+  
+  // State for editing category title
+  const [editingCatId, setEditingCatId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   // Initialize Checklist if empty
   useEffect(() => {
@@ -173,17 +180,40 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     setShowNewCatInput(false);
   };
 
-  const handleAddItem = (catId: string, text: string) => {
-    if (!text.trim()) return;
+  const handleStartEditTitle = (cat: ChecklistCategory, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingCatId(cat.id);
+    setEditingTitle(cat.title);
+  };
+
+  const handleSaveTitle = (catId: string) => {
+    if (editingTitle.trim()) {
+      onUpdateChecklist(checklist.map(c => c.id === catId ? { ...c, title: editingTitle } : c));
+    }
+    setEditingCatId(null);
+    setEditingTitle('');
+  };
+
+  const handleAddItemInput = (catId: string, val: string) => {
+    setNewItemInputs(prev => ({ ...prev, [catId]: val }));
+  };
+
+  const handleAddItemSubmit = (catId: string) => {
+    const text = newItemInputs[catId];
+    if (!text || !text.trim()) return;
+
     onUpdateChecklist(checklist.map(cat => {
       if (cat.id === catId) {
         return {
           ...cat,
-          items: [...cat.items, { id: Math.random().toString(36).substr(2, 9), text, checked: false }]
+          items: [...cat.items, { id: Math.random().toString(36).substr(2, 9), text: text.trim(), checked: false }]
         };
       }
       return cat;
     }));
+
+    // Clear input but keep focus logic is handled by React state update
+    setNewItemInputs(prev => ({ ...prev, [catId]: '' }));
   };
 
   const handleToggleItem = (catId: string, itemId: string) => {
@@ -535,18 +565,44 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                       const total = cat.items.length;
                       const checkedCount = cat.items.filter(i => i.checked).length;
                       const progress = total > 0 ? (checkedCount / total) * 100 : 0;
+                      const isEditingTitle = editingCatId === cat.id;
 
                       return (
                         <div key={cat.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                            {/* Cat Header */}
                            <div 
                              onClick={() => toggleCategoryCollapse(cat.id)}
-                             className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                             className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors select-none"
                            >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-1">
                                  {cat.isCollapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-                                 <span className="font-bold text-sm text-ink">{cat.title}</span>
-                                 <span className="text-xs text-gray-400 font-mono">({checkedCount}/{total})</span>
+                                 
+                                 {isEditingTitle ? (
+                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                       <input 
+                                          type="text" 
+                                          value={editingTitle}
+                                          onChange={e => setEditingTitle(e.target.value)}
+                                          onKeyDown={e => {
+                                             if(e.key === 'Enter') handleSaveTitle(cat.id);
+                                          }}
+                                          className="text-sm font-bold p-1 border border-japan-blue rounded outline-none"
+                                          autoFocus
+                                       />
+                                       <button onClick={() => handleSaveTitle(cat.id)} className="text-japan-blue"><Save size={16} /></button>
+                                    </div>
+                                 ) : (
+                                    <div className="flex items-center gap-2 group">
+                                       <span className="font-bold text-sm text-ink">{cat.title}</span>
+                                       <button 
+                                          onClick={(e) => handleStartEditTitle(cat, e)}
+                                          className="text-gray-300 hover:text-japan-blue p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                       >
+                                          <Pencil size={12} />
+                                       </button>
+                                       <span className="text-xs text-gray-400 font-mono">({checkedCount}/{total})</span>
+                                    </div>
+                                 )}
                               </div>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
@@ -597,14 +653,20 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                      type="text" 
                                      placeholder="新增項目..." 
                                      className="flex-1 text-xs bg-transparent outline-none py-1"
+                                     value={newItemInputs[cat.id] || ''}
+                                     onChange={(e) => handleAddItemInput(cat.id, e.target.value)}
                                      onKeyDown={(e) => {
                                        if (e.key === 'Enter') {
-                                         const val = (e.target as HTMLInputElement).value;
-                                         handleAddItem(cat.id, val);
-                                         (e.target as HTMLInputElement).value = '';
+                                         handleAddItemSubmit(cat.id);
                                        }
                                      }}
                                    />
+                                   <button 
+                                     onClick={() => handleAddItemSubmit(cat.id)}
+                                     className="p-1 rounded bg-blue-50 text-japan-blue hover:bg-japan-blue hover:text-white transition-colors"
+                                   >
+                                      <Plus size={14} />
+                                   </button>
                                 </div>
                              </div>
                            )}
