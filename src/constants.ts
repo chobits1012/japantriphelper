@@ -67,6 +67,7 @@ export const REGIONAL_PASSES: Record<string, string[]> = {
 
 export const ITINERARY_DATA: ItineraryDay[] = [
   {
+      id: "day-1",
       day: "Day 1", date: "01/23", weekday: "Fri",
       title: "抵達京都",
       desc: "桃園機場 ➔ 關西機場 ➔ 京都",
@@ -85,6 +86,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-2",
       day: "Day 2", date: "01/24", weekday: "Sat",
       title: "京都散策",
       desc: "伏見稻荷、清水寺、市區漫遊",
@@ -102,6 +104,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-3",
       day: "Day 3", date: "01/25", weekday: "Sun",
       title: "滋賀琵琶湖",
       desc: "海上鳥居、藤森照信建築",
@@ -121,11 +124,12 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-4",
       day: "Day 4", date: "01/26", weekday: "Mon",
       title: "海之京都",
       desc: "神隱少女海上列車、伊根舟屋",
       pass: true,
-      bg: "/day4.jpg",
+      bg: "https://images.unsplash.com/photo-1554797584-073db172f3da?q=80&w=1000",
       weatherIcon: 'rain',
       temp: "2°C / 6°C",
       location: "京都 伊根",
@@ -140,6 +144,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-5",
       day: "Day 5", date: "01/27", weekday: "Tue",
       title: "伊根 ➔ 城崎",
       desc: "天橋立絕景、城崎溫泉巡禮",
@@ -159,6 +164,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-6",
       day: "Day 6", date: "01/28", weekday: "Wed",
       title: "城崎 ➔ 岡山",
       desc: "長途移動、岡山之夜",
@@ -178,6 +184,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-7",
       day: "Day 7", date: "01/29", weekday: "Thu",
       title: "岡山 ➔ 京都",
       desc: "倉敷美觀、返回京都基地",
@@ -195,6 +202,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-8",
       day: "Day 8", date: "01/30", weekday: "Fri",
       title: "京都療癒日",
       desc: "迷你豬咖啡、錦市場、祇園",
@@ -213,6 +221,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-9",
       day: "Day 9", date: "01/31", weekday: "Sat",
       title: "嵐山漫遊",
       desc: "渡月橋、竹林、小火車",
@@ -230,6 +239,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-10",
       day: "Day 10", date: "02/01", weekday: "Sun",
       title: "移動至大阪",
       desc: "心齋橋、道頓堀購物",
@@ -248,6 +258,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-11",
       day: "Day 11", date: "02/02", weekday: "Mon",
       title: "大阪全日",
       desc: "大阪城、梅田夜景",
@@ -265,6 +276,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       ]
   },
   {
+      id: "day-12",
       day: "Day 12", date: "02/03", weekday: "Tue",
       title: "返台",
       desc: "最後時光、前往機場",

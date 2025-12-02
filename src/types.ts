@@ -24,6 +24,7 @@ export interface Accommodation {
 }
 
 export interface ItineraryDay {
+  id: string; // New: Unique ID for drag-and-drop
   day: string;
   date: string;
   weekday: string;
@@ -40,7 +41,7 @@ export interface ItineraryDay {
   tips?: string;
   accommodation?: Accommodation;
   events: ItineraryEvent[];
-  passName?: string; // New: Specific pass name e.g. "Kansai Wide Pass"
+  passName?: string;
 }
 
 // New Types for Travel Toolbox
