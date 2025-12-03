@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, PieChart } from 'lucide-react';
 import LZString from 'lz-string';
 import type { ExpenseItem, ChecklistCategory, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
@@ -25,6 +25,14 @@ const DEFAULT_CATEGORIES = [
   { title: "其他", items: ["雨傘", "筆", "Visit Japan Web 截圖"] }
 ];
 
+const EXPENSE_CATEGORIES = {
+  food: { label: '美食', color: '#fb923c', bg: 'bg-orange-400' },
+  shopping: { label: '購物', color: '#c084fc', bg: 'bg-purple-400' },
+  transport: { label: '交通', color: '#9ca3af', bg: 'bg-gray-400' },
+  hotel: { label: '住宿', color: '#818cf8', bg: 'bg-indigo-400' },
+  other: { label: '其他', color: '#60a5fa', bg: 'bg-blue-400' }
+};
+
 const TravelToolbox: React.FC<TravelToolboxProps> = ({ 
   isOpen, onClose, 
   tripSettings, onUpdateTripSettings,
@@ -45,6 +53,8 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   const [newExpTitle, setNewExpTitle] = useState('');
   const [newExpAmount, setNewExpAmount] = useState('');
   const [newExpCat, setNewExpCat] = useState<ExpenseItem['category']>('food');
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [budgetInput, setBudgetInput] = useState(tripSettings.budgetJPY?.toString() || '');
 
   // --- Backup State ---
   const [importCode, setImportCode] = useState('');
@@ -54,11 +64,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   // --- Checklist State ---
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCatInput, setShowNewCatInput] = useState(false);
-  
-  // State for adding items per category: { [catId]: "item text" }
   const [newItemInputs, setNewItemInputs] = useState<Record<string, string>>({});
-  
-  // State for editing category title
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
 
@@ -110,7 +116,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     }
   };
 
-  // Expense Logic
+  // --- EXPENSE LOGIC ---
   const handleAddExpense = () => {
     if (!newExpTitle || !newExpAmount) return;
     const newItem: ExpenseItem = {
@@ -135,7 +141,29 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     }
   };
 
+  const handleSaveBudget = () => {
+    const budget = parseInt(budgetInput);
+    if (!isNaN(budget)) {
+      onUpdateTripSettings({ ...tripSettings, budgetJPY: budget });
+    }
+    setIsEditingBudget(false);
+  };
+
+  // Calculate Expense Stats
   const totalJPY = expenses.reduce((sum, item) => sum + item.amountJPY, 0);
+  const budget = tripSettings.budgetJPY || 0;
+  const remaining = budget - totalJPY;
+  const percentSpent = budget > 0 ? Math.min((totalJPY / budget) * 100, 100) : 0;
+
+  const categoryStats = useMemo(() => {
+    const stats: Record<string, number> = { food: 0, shopping: 0, transport: 0, hotel: 0, other: 0 };
+    expenses.forEach(item => {
+      if (stats[item.category] !== undefined) {
+        stats[item.category] += item.amountJPY;
+      }
+    });
+    return stats;
+  }, [expenses]);
 
   // --- CHECKLIST LOGIC ---
 
@@ -250,7 +278,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       itineraryData,
       expenses,
       checklist,
-      version: 2, // Bumped version for categorized checklist
+      version: 2, 
       timestamp: new Date().toISOString()
     };
   };
@@ -290,11 +318,9 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
         onUpdateItinerary(data.itineraryData);
         if (data.expenses) onUpdateExpenses(data.expenses);
         
-        // Handle checklist migration during import if needed
         if (data.checklist) {
            const cl = data.checklist;
            if (Array.isArray(cl) && cl.length > 0 && 'text' in cl[0]) {
-              // Old format import
               onUpdateChecklist([{
                  id: 'imported-legacy', title: '匯入的清單', items: cl, isCollapsed: false
               }]);
@@ -396,72 +422,136 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
           
           {/* --- EXPENSE TAB --- */}
           {activeTab === 'expense' && (
-            <div className="space-y-4">
-              {/* Summary Card */}
-              <div className="bg-gradient-to-br from-japan-blue to-indigo-700 rounded-xl p-5 text-white shadow-lg relative overflow-hidden">
-                <div className="relative z-10">
-                   <p className="text-xs font-bold opacity-70 mb-1 uppercase tracking-wider">Total Spending</p>
-                   <div className="flex items-baseline gap-2">
-                     <span className="text-3xl font-bold font-mono">¥{totalJPY.toLocaleString()}</span>
-                     <span className="text-sm opacity-80">≈ NT${(totalJPY * rate).toLocaleString()}</span>
-                   </div>
-                </div>
-                <Coins className="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rotate-12" />
+            <div className="space-y-4 pb-20">
+              
+              {/* 1. Budget Settings */}
+              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                 <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Budget</span>
+                    {isEditingBudget ? (
+                       <button onClick={handleSaveBudget} className="text-japan-blue bg-blue-50 px-2 py-1 rounded text-xs font-bold">儲存</button>
+                    ) : (
+                       <button onClick={() => setIsEditingBudget(true)} className="text-gray-400 hover:text-japan-blue"><Pencil size={14}/></button>
+                    )}
+                 </div>
+                 
+                 {isEditingBudget ? (
+                    <input 
+                      type="number" 
+                      value={budgetInput}
+                      onChange={e => setBudgetInput(e.target.value)}
+                      className="w-full text-2xl font-mono font-bold border-b-2 border-japan-blue outline-none"
+                      autoFocus
+                    />
+                 ) : (
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-3xl font-mono font-bold text-ink">
+                         ¥{(tripSettings.budgetJPY || 0).toLocaleString()}
+                       </span>
+                       <span className="text-xs text-gray-400">總預算</span>
+                    </div>
+                 )}
               </div>
 
-              {/* Action Header */}
-              <div className="flex justify-between items-center">
-                 <span className="text-xs font-bold text-gray-400 uppercase">記帳明細</span>
+              {/* 2. Visual Chart (Stacked Bar) */}
+              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                 <div className="flex justify-between items-end">
+                    <div>
+                       <p className="text-xs font-bold text-gray-400">已支出</p>
+                       <p className="text-xl font-mono font-bold text-japan-blue">¥{totalJPY.toLocaleString()}</p>
+                    </div>
+                    <div className="text-right">
+                       <p className="text-xs font-bold text-gray-400">剩餘</p>
+                       <p className={`text-xl font-mono font-bold ${remaining < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                         ¥{remaining.toLocaleString()}
+                       </p>
+                    </div>
+                 </div>
+
+                 {/* Stacked Bar */}
+                 <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex">
+                    {totalJPY > 0 && Object.entries(categoryStats).map(([cat, amount]) => {
+                       if (amount === 0) return null;
+                       const pct = (amount / totalJPY) * 100;
+                       // @ts-ignore
+                       const colorClass = EXPENSE_CATEGORIES[cat]?.bg || 'bg-gray-400';
+                       return (
+                          <div key={cat} style={{ width: `${pct}%` }} className={`h-full ${colorClass}`} title={`${cat}: ¥${amount}`} />
+                       );
+                    })}
+                 </div>
+                 
+                 {/* Breakdown Legend */}
+                 <div className="flex flex-wrap gap-2 pt-2">
+                    {Object.entries(categoryStats).map(([cat, amount]) => {
+                       if (amount === 0) return null;
+                       // @ts-ignore
+                       const conf = EXPENSE_CATEGORIES[cat];
+                       return (
+                          <div key={cat} className="flex items-center gap-1.5 text-xs bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                             <div className={`w-2 h-2 rounded-full ${conf.bg}`} />
+                             <span className="text-gray-600 font-bold">{conf.label}</span>
+                             <span className="font-mono text-gray-400">¥{amount.toLocaleString()}</span>
+                          </div>
+                       );
+                    })}
+                 </div>
+              </div>
+
+              {/* 3. Action Header */}
+              <div className="flex justify-between items-center pt-2">
+                 <span className="text-xs font-bold text-gray-400 uppercase">新增記帳</span>
                  {expenses.length > 0 && (
                    <button 
                      onClick={handleClearExpenses}
                      className="text-xs font-bold text-red-400 hover:text-red-500 flex items-center gap-1 bg-red-50 px-2 py-1 rounded-md"
                    >
-                     <Trash2 size={12} /> 清空記帳
+                     <Trash2 size={12} /> 清空
                    </button>
                  )}
               </div>
 
-              {/* Add Expense */}
-              <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex gap-2">
-                 <div className="flex-1 space-y-2">
+              {/* 4. Add Expense Input (Wrapped for Mobile) */}
+              <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-wrap gap-2 items-end">
+                 <div className="flex-1 min-w-[140px]">
                     <input 
                       type="text" 
                       placeholder="項目 (如: 拉麵)" 
                       value={newExpTitle}
                       onChange={e => setNewExpTitle(e.target.value)}
-                      className="w-full text-sm font-bold border-b border-gray-200 focus:border-japan-blue outline-none py-1"
+                      className="w-full text-sm font-bold border-b border-gray-200 focus:border-japan-blue outline-none py-1 mb-2"
                     />
-                    <div className="flex gap-2">
-                      <input 
-                        type="number" 
-                        placeholder="日幣金額" 
-                        value={newExpAmount}
-                        onChange={e => setNewExpAmount(e.target.value)}
-                        className="w-24 text-sm font-mono border-b border-gray-200 focus:border-japan-blue outline-none py-1"
-                      />
-                      <select 
-                        value={newExpCat} 
-                        onChange={(e: any) => setNewExpCat(e.target.value)}
-                        className="text-xs bg-gray-50 rounded border-none outline-none"
-                      >
-                        <option value="food">美食</option>
-                        <option value="shopping">購物</option>
-                        <option value="transport">交通</option>
-                        <option value="hotel">住宿</option>
-                        <option value="other">其他</option>
-                      </select>
-                    </div>
+                    <input 
+                      type="number" 
+                      placeholder="金額 (JPY)" 
+                      value={newExpAmount}
+                      onChange={e => setNewExpAmount(e.target.value)}
+                      className="w-full text-sm font-mono border-b border-gray-200 focus:border-japan-blue outline-none py-1"
+                    />
                  </div>
-                 <button 
-                   onClick={handleAddExpense}
-                   className="bg-japan-blue text-white w-10 rounded-lg flex items-center justify-center hover:bg-japan-blue/90 shadow-sm"
-                 >
-                   <Plus size={20} />
-                 </button>
+                 
+                 <div className="flex gap-2 w-full sm:w-auto">
+                    <select 
+                      value={newExpCat} 
+                      onChange={(e: any) => setNewExpCat(e.target.value)}
+                      className="flex-1 text-xs bg-gray-50 rounded px-2 py-2 border-none outline-none h-10"
+                    >
+                      <option value="food">美食</option>
+                      <option value="shopping">購物</option>
+                      <option value="transport">交通</option>
+                      <option value="hotel">住宿</option>
+                      <option value="other">其他</option>
+                    </select>
+                    <button 
+                      onClick={handleAddExpense}
+                      className="bg-japan-blue text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-japan-blue/90 shadow-sm flex-shrink-0"
+                    >
+                      <Plus size={20} />
+                    </button>
+                 </div>
               </div>
 
-              {/* List */}
+              {/* 5. Expense List */}
               <div className="space-y-2">
                 {expenses.length === 0 ? (
                   <div className="text-center py-8 text-gray-400 text-sm">還沒有記帳紀錄</div>
@@ -470,19 +560,20 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                     <div key={item.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-100 shadow-sm animate-in slide-in-from-bottom-2">
                        <div className="flex items-center gap-3">
                           <div className={`
-                             w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold
+                             w-8 h-8 rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0
                              ${item.category === 'food' ? 'bg-orange-400' : 
                                item.category === 'shopping' ? 'bg-purple-400' : 
-                               item.category === 'transport' ? 'bg-gray-400' : 'bg-blue-400'}
+                               item.category === 'transport' ? 'bg-gray-400' : 
+                               item.category === 'hotel' ? 'bg-indigo-400' : 'bg-blue-400'}
                           `}>
                             {item.category[0].toUpperCase()}
                           </div>
-                          <div>
-                            <p className="font-bold text-ink text-sm">{item.title}</p>
+                          <div className="min-w-0">
+                            <p className="font-bold text-ink text-sm truncate">{item.title}</p>
                             <p className="text-[10px] text-gray-400">{item.date} • {item.category}</p>
                           </div>
                        </div>
-                       <div className="flex items-center gap-3">
+                       <div className="flex items-center gap-3 flex-shrink-0">
                           <span className="font-mono font-bold text-japan-blue">¥{item.amountJPY.toLocaleString()}</span>
                           <button onClick={() => handleDeleteExpense(item.id)} className="text-gray-300 hover:text-red-400">
                             <Trash2 size={14} />
@@ -579,16 +670,18 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                  
                                  {isEditingTitle ? (
                                     <div className="flex items-center gap-2 flex-1 min-w-0" onClick={e => e.stopPropagation()}>
-                                       <input 
-                                          type="text" 
-                                          value={editingTitle}
-                                          onChange={e => setEditingTitle(e.target.value)}
-                                          onKeyDown={e => {
-                                             if(e.key === 'Enter') handleSaveTitle(cat.id);
-                                          }}
-                                          className="text-sm font-bold p-1 border border-japan-blue rounded outline-none w-full min-w-0 bg-white"
-                                          autoFocus
-                                       />
+                                       <div className="flex-1 min-w-0">
+                                          <input 
+                                             type="text" 
+                                             value={editingTitle}
+                                             onChange={e => setEditingTitle(e.target.value)}
+                                             onKeyDown={e => {
+                                                if(e.key === 'Enter') handleSaveTitle(cat.id);
+                                             }}
+                                             className="text-sm font-bold p-1 border border-japan-blue rounded outline-none w-full bg-white"
+                                             autoFocus
+                                          />
+                                       </div>
                                        <button 
                                           onClick={() => handleSaveTitle(cat.id)} 
                                           className="p-1.5 bg-blue-50 text-japan-blue rounded hover:bg-japan-blue hover:text-white transition-colors flex-shrink-0"

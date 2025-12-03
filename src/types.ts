@@ -6,6 +6,7 @@ export interface TripSettings {
   name: string;
   startDate: string;
   season: TripSeason;
+  budgetJPY?: number; // New: Total budget in Yen
 }
 
 export interface ItineraryEvent {
