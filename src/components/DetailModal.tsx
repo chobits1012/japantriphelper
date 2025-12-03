@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser } from 'lucide-react';
+import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
 import TimelineEvent from './TimelineEvent';
 import { REGIONS, REGIONAL_PASSES, PASS_COLORS } from '../constants';
@@ -101,7 +101,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const [selectedPass, setSelectedPass] = useState<string>('');
   const [customPassName, setCustomPassName] = useState<string>('');
   const [passDuration, setPassDuration] = useState<number>(1);
-  const [passColor, setPassColor] = useState<string>(PASS_COLORS[0].value); // NEW: Color state
+  const [passColor, setPassColor] = useState<string>(PASS_COLORS[0].value);
   const isCustomPass = selectedPass === 'custom';
 
   // Live Weather State
@@ -118,7 +118,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     setSelectedPass('');
     setCustomPassName('');
     setPassDuration(1);
-    setPassColor(PASS_COLORS[0].value); // Reset color default
+    setPassColor(PASS_COLORS[0].value);
     
     setLiveWeather(null);
     setForecast([]);
@@ -201,7 +201,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                     ...baseData,
                     pass: true,
                     passName: finalPassName,
-                    passColor: passColor // Apply selected color
+                    passColor: passColor
                 });
             }
         }
@@ -237,6 +237,31 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
      }
   };
 
+  const handleViewRoute = () => {
+    // Filter events that contain a valid mapQuery
+    const validLocations = day.events
+      .filter(e => e.mapQuery && e.mapQuery.trim() !== '')
+      .map(e => e.mapQuery!);
+
+    if (validLocations.length < 2) {
+      alert("今日行程地點不足兩個，無法規劃路線。");
+      return;
+    }
+
+    const origin = encodeURIComponent(validLocations[0]);
+    const destination = encodeURIComponent(validLocations[validLocations.length - 1]);
+    
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=transit`;
+
+    // Add waypoints if there are intermediate stops
+    if (validLocations.length > 2) {
+      const waypoints = validLocations.slice(1, -1).map(loc => encodeURIComponent(loc)).join('|');
+      url += `&waypoints=${waypoints}`;
+    }
+
+    window.open(url, '_blank');
+  };
+
   const handleCancel = () => {
     setEditData(day);
     setIsEditing(false);
@@ -266,7 +291,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const key = day.day;
   const weatherUrl = `https://www.google.com/search?q=${encodeURIComponent(day.location + " 天氣")}`;
 
-  // Helper to adjust color opacity
   const hexToRgba = (hex: string, alpha: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -641,7 +665,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
 
             {/* Transport Pass Badge in Detail View - Dynamic Color */}
             {day.pass && (
-              <div className="max-w-3xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-2">
+              <div className="max-w-3xl mx-auto mb-6 animate-in fade-in slide-in-from-bottom-2">
                  <div 
                    className="inline-flex items-center gap-3 pr-4 pl-2 py-2 rounded-lg shadow-sm border"
                    style={{ 
@@ -665,6 +689,19 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                        </p>
                     </div>
                  </div>
+              </div>
+            )}
+
+            {/* View Route Button */}
+            {day.events.filter(e => e.mapQuery).length >= 2 && (
+              <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-3 pl-2 md:pl-4">
+                <button
+                  onClick={handleViewRoute}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl shadow-sm text-japan-blue font-bold hover:bg-gray-50 hover:shadow-md transition-all group"
+                >
+                  <MapIcon size={18} className="group-hover:scale-110 transition-transform" />
+                  <span>查看當日路線 (Google Maps)</span>
+                </button>
               </div>
             )}
 
