@@ -574,11 +574,11 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                              onClick={() => toggleCategoryCollapse(cat.id)}
                              className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors select-none"
                            >
-                              <div className="flex items-center gap-2 flex-1">
-                                 {cat.isCollapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                 {cat.isCollapsed ? <ChevronRight size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
                                  
                                  {isEditingTitle ? (
-                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                    <div className="flex items-center gap-2 flex-1 min-w-0" onClick={e => e.stopPropagation()}>
                                        <input 
                                           type="text" 
                                           value={editingTitle}
@@ -586,32 +586,32 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                           onKeyDown={e => {
                                              if(e.key === 'Enter') handleSaveTitle(cat.id);
                                           }}
-                                          className="text-sm font-bold p-1 border border-japan-blue rounded outline-none"
+                                          className="text-sm font-bold p-1 border border-japan-blue rounded outline-none w-full min-w-0 bg-white"
                                           autoFocus
                                        />
                                        <button 
                                           onClick={() => handleSaveTitle(cat.id)} 
-                                          className="p-1.5 bg-blue-50 text-japan-blue rounded hover:bg-japan-blue hover:text-white transition-colors"
+                                          className="p-1.5 bg-blue-50 text-japan-blue rounded hover:bg-japan-blue hover:text-white transition-colors flex-shrink-0"
                                        >
                                           <Save size={16} />
                                        </button>
                                     </div>
                                  ) : (
-                                    <div className="flex items-center gap-2 group">
-                                       <span className="font-bold text-sm text-ink">{cat.title}</span>
+                                    <div className="flex items-center gap-2 group min-w-0">
+                                       <span className="font-bold text-sm text-ink truncate">{cat.title}</span>
                                        <button 
                                           onClick={(e) => handleStartEditTitle(cat, e)}
-                                          className="text-gray-300 hover:text-japan-blue p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          className="text-gray-300 hover:text-japan-blue p-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                                        >
                                           <Pencil size={12} />
                                        </button>
-                                       <span className="text-xs text-gray-400 font-mono">({checkedCount}/{total})</span>
+                                       <span className="text-xs text-gray-400 font-mono flex-shrink-0">({checkedCount}/{total})</span>
                                     </div>
                                  )}
                               </div>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
-                                className="text-gray-300 hover:text-red-400 p-1"
+                                className="text-gray-300 hover:text-red-400 p-1 flex-shrink-0"
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -631,20 +631,20 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                     onClick={() => handleToggleItem(cat.id, item.id)}
                                     className="flex items-center justify-between group cursor-pointer"
                                   >
-                                     <div className="flex items-center gap-3">
+                                     <div className="flex items-center gap-3 min-w-0">
                                         <div className={`
                                            w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0
                                            ${item.checked ? 'bg-japan-blue border-japan-blue text-white' : 'border-gray-300 bg-white'}
                                         `}>
                                            {item.checked && <Check size={10} />}
                                         </div>
-                                        <span className={`text-sm ${item.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                                        <span className={`text-sm truncate ${item.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
                                           {item.text}
                                         </span>
                                      </div>
                                      <button 
                                        onClick={(e) => { e.stopPropagation(); handleDeleteItem(cat.id, item.id); }}
-                                       className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-opacity"
+                                       className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-opacity flex-shrink-0"
                                      >
                                        <X size={14} />
                                      </button>
@@ -653,11 +653,11 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                 
                                 {/* Add Item Input */}
                                 <div className="mt-2 pt-2 border-t border-gray-50 flex items-center gap-2">
-                                   <Plus size={14} className="text-gray-300" />
+                                   <Plus size={14} className="text-gray-300 flex-shrink-0" />
                                    <input 
                                      type="text" 
                                      placeholder="新增項目..." 
-                                     className="flex-1 text-xs bg-transparent outline-none py-1"
+                                     className="flex-1 text-xs bg-transparent outline-none py-1 min-w-0"
                                      value={newItemInputs[cat.id] || ''}
                                      onChange={(e) => handleAddItemInput(cat.id, e.target.value)}
                                      onKeyDown={(e) => {
@@ -668,7 +668,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                    />
                                    <button 
                                      onClick={() => handleAddItemSubmit(cat.id)}
-                                     className="p-1 rounded bg-blue-50 text-japan-blue hover:bg-japan-blue hover:text-white transition-colors"
+                                     className="p-1 rounded bg-blue-50 text-japan-blue hover:bg-japan-blue hover:text-white transition-colors flex-shrink-0"
                                    >
                                       <Plus size={14} />
                                    </button>
@@ -688,11 +688,11 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                         value={newCategoryName}
                         onChange={e => setNewCategoryName(e.target.value)}
                         placeholder="新分類名稱..."
-                        className="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-sm outline-none focus:border-japan-blue"
+                        className="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-sm outline-none focus:border-japan-blue min-w-0"
                         autoFocus
                       />
-                      <button onClick={handleAddCategory} className="text-japan-blue font-bold text-sm">新增</button>
-                      <button onClick={() => setShowNewCatInput(false)} className="text-gray-400"><X size={16} /></button>
+                      <button onClick={handleAddCategory} className="text-japan-blue font-bold text-sm flex-shrink-0">新增</button>
+                      <button onClick={() => setShowNewCatInput(false)} className="text-gray-400 flex-shrink-0"><X size={16} /></button>
                    </div>
                 ) : (
                    <button 
@@ -776,12 +776,12 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                       value={importCode}
                       onChange={(e) => setImportCode(e.target.value)}
                       placeholder="或貼上壓縮代碼..."
-                      className="flex-1 p-3 text-xs font-mono border border-gray-200 rounded-xl outline-none focus:border-japan-blue"
+                      className="flex-1 p-3 text-xs font-mono border border-gray-200 rounded-xl outline-none focus:border-japan-blue min-w-0"
                     />
                     <button 
                       onClick={handleImportCode}
                       disabled={!importCode}
-                      className="px-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="px-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
                     >
                       讀取
                     </button>
