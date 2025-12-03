@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon } from 'lucide-react';
+import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon, Search } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
 import TimelineEvent from './TimelineEvent';
 import { REGIONS, REGIONAL_PASSES, PASS_COLORS } from '../constants';
@@ -260,6 +260,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     }
 
     window.open(url, '_blank');
+  };
+
+  const handleJorudanSearch = () => {
+    // Open Traditional Chinese version of Jorudan
+    window.open('https://world.jorudan.co.jp/mln/zh-tw/', '_blank');
   };
 
   const handleCancel = () => {
@@ -663,8 +668,8 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               </p>
             </div>
 
-            {/* Unified Info Bar: Transport Pass + View Route */}
-            {(day.pass || day.events.filter(e => e.mapQuery).length >= 2) && (
+            {/* Unified Info Bar: Transport Pass + View Route + Jorudan */}
+            {(day.pass || day.events.length > 0) && (
               <div className="max-w-3xl mx-auto mb-10 pl-2 md:pl-4 flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                  
                  {/* Transport Pass Badge */}
@@ -701,6 +706,15 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                       <span>查看路線</span>
                     </button>
                  )}
+
+                 {/* Jorudan Search Button */}
+                 <button
+                    onClick={handleJorudanSearch}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:text-green-600 hover:border-green-200 transition-all shadow-sm group"
+                 >
+                    <Search size={14} className="group-hover:scale-110 transition-transform text-green-500" />
+                    <span>乘換案內</span>
+                 </button>
               </div>
             )}
 
