@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus, Moon } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
@@ -292,7 +291,7 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300"
+      className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-950 dark:text-slate-100 transition-colors duration-1000"
       style={{ backgroundImage: isDarkMode ? 'none' : `url("${WASHI_PATTERN}")` }}
     >
       <TripSetup isOpen={isSetupOpen} onClose={() => setIsSetupOpen(false)} onSetup={handleSetupTrip} />
@@ -324,18 +323,18 @@ const App: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-linear transform scale-105"
         style={{ backgroundImage: `url('${HERO_IMAGE}')` }}
       />
-      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-500 ${isHome ? 'opacity-100' : 'opacity-0'} dark:from-slate-950/90 dark:via-black/60`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-1000 ${isHome ? 'opacity-100' : 'opacity-0'} dark:from-slate-950/90 dark:via-black/60`} />
 
       {/* Main Container */}
       <div className="absolute inset-0 flex flex-row overflow-hidden">
         
         {/* Sidebar */}
         <div 
-           className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 pt-[env(safe-area-inset-top)] ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60 dark:bg-slate-900/90 dark:border-slate-700/60'}`}
+           className={`relative z-10 flex flex-col transition-all duration-1000 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 pt-[env(safe-area-inset-top)] ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60 dark:bg-slate-900/90 dark:border-slate-700/60'}`}
         >
           
           {/* Sidebar Header */}
-          <div className={`transition-all duration-500 flex-shrink-0 relative ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}`}>
+          <div className={`transition-all duration-1000 flex-shrink-0 relative ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}`}>
              <div className="flex items-center gap-2 mb-3">
                 {getSeasonIcon(tripSettings.season, 24, "animate-pulse")}
                 <span className="text-sm font-bold tracking-[0.4em] uppercase">{tripSettings.startDate.split('-')[0]} Trip</span>
@@ -346,7 +345,7 @@ const App: React.FC = () => {
              <div className="mt-4 w-16 h-1 bg-japan-red shadow-lg rounded-full"></div>
           </div>
 
-          <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50 dark:hover:bg-slate-800 ${!isHome ? 'hidden lg:block opacity-100' : 'hidden opacity-0'}`}>
+          <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-1000 hover:bg-gray-50 dark:hover:bg-slate-800 ${!isHome ? 'hidden lg:block opacity-100' : 'hidden opacity-0'}`}>
             <div className="flex items-center justify-center gap-2 mb-1 text-japan-blue/80 dark:text-sky-400">
               {getSeasonIcon(tripSettings.season, 16)}
               <span className="text-xs font-bold tracking-[0.2em] uppercase">{tripSettings.startDate.split('-')[0]}</span>
@@ -420,24 +419,24 @@ const App: React.FC = () => {
           </DndContext>
           
           {/* Action Buttons */}
-          <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse lg:flex-row lg:bottom-6'}`}>
-            <button onClick={toggleDarkMode} title={isDarkMode ? "切換亮色模式" : "切換深色模式"} className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700'}`}>
+          <div className={`absolute z-30 flex items-center gap-3 transition-all duration-500 ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse lg:flex-row lg:bottom-6'}`}>
+            <button onClick={toggleDarkMode} title={isDarkMode ? "切換亮色模式" : "切換深色模式"} className={`p-2 rounded-full shadow-lg transition-all duration-500 ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700'}`}>
                 {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-            <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}>
+            <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all duration-500 ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}>
                <RotateCcw size={16} />
             </button>
 
-            <button onClick={handleNewTrip} title="建立新旅程" className={`p-2 rounded-full shadow-lg transition-all text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-emerald-500 hover:bg-emerald-600'}`}>
+            <button onClick={handleNewTrip} title="建立新旅程" className={`p-2 rounded-full shadow-lg transition-all duration-500 text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-emerald-500 hover:bg-emerald-600'}`}>
                <MapIcon size={18} />
             </button>
 
-            <button onClick={() => setIsToolboxOpen(true)} title="旅遊工具箱" className={`p-2 rounded-full shadow-lg transition-all text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-orange-500 hover:bg-orange-600'}`}>
+            <button onClick={() => setIsToolboxOpen(true)} title="旅遊工具箱" className={`p-2 rounded-full shadow-lg transition-all duration-500 text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-orange-500 hover:bg-orange-600'}`}>
                <Briefcase size={18} />
             </button>
 
-             <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white dark:bg-sky-600 dark:hover:bg-sky-500'}`}>
+             <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all duration-500 font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white dark:bg-sky-600 dark:hover:bg-sky-500'}`}>
                <Sparkles size={16} className={isHome ? "group-hover:text-yellow-300 transition-colors" : ""} />
                <span className={`${!isHome ? 'hidden lg:inline' : ''}`}>AI 排程</span>
             </button>

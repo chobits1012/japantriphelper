@@ -40,7 +40,7 @@ export const DayCard: React.FC<DayCardProps> = ({
       ref={innerRef}
       style={style}
       className={`
-        relative transition-all duration-200 group
+        relative transition-all duration-700 group
         ${isHome 
             ? 'bg-white/85 backdrop-blur-sm rounded-xl p-5 border border-white/20 mb-4 dark:bg-slate-800/90 dark:border-slate-700' 
             : isSelected 

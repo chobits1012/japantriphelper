@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon, Search } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
@@ -306,7 +305,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   return (
     <div 
       key={key}
-      className={`h-full w-full flex flex-col bg-white dark:bg-slate-950 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 pt-[env(safe-area-inset-top)] ${className || ''}`}
+      className={`h-full w-full flex flex-col bg-white dark:bg-slate-950 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 pt-[env(safe-area-inset-top)] transition-colors duration-1000 ${className || ''}`}
     >
       {!isEditing && (
         <>
@@ -314,7 +313,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
             className="absolute inset-0 bg-cover bg-center opacity-25 grayscale-0 pointer-events-none z-0 transition-all duration-700 ease-in-out transform scale-105"
             style={{ backgroundImage: `url('${day.bg}')` }}
           />
-          {/* Dark Mode Gradient Fix */}
+          {/* Dark Mode Gradient Fix: Prevent white fog by using dark colors in gradient for dark mode */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/70 dark:from-slate-950/95 dark:via-slate-950/85 dark:to-slate-950/70 pointer-events-none z-0" />
         </>
       )}
@@ -546,7 +545,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                       type="text" 
                       value={editData.title}
                       onChange={(e) => setEditData({...editData, title: e.target.value})}
-                      className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:text-white dark:border-slate-700 dark:focus:border-sky-500"
+                      className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500"
                    />
                  </div>
                  <div>
@@ -555,7 +554,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                       type="text" 
                       value={editData.location}
                       onChange={(e) => setEditData({...editData, location: e.target.value})}
-                      className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500"
+                      className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500"
                       placeholder="例如: 東京"
                    />
                  </div>
