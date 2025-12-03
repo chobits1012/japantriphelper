@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus, Moon } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
@@ -290,10 +291,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div 
-      className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-950 dark:text-slate-100 transition-colors duration-1000"
-      style={{ backgroundImage: isDarkMode ? 'none' : `url("${WASHI_PATTERN}")` }}
-    >
+    <div className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-950 dark:text-slate-100 transition-colors duration-1000">
+      {/* Washi Pattern Overlay with Fade Transition */}
+      <div 
+        className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
+        style={{ backgroundImage: `url("${WASHI_PATTERN}")` }}
+      />
+
       <TripSetup isOpen={isSetupOpen} onClose={() => setIsSetupOpen(false)} onSetup={handleSetupTrip} />
 
       <AIGenerator 
