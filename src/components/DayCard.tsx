@@ -42,13 +42,13 @@ export const DayCard: React.FC<DayCardProps> = ({
       className={`
         relative transition-all duration-200 group
         ${isHome 
-            ? 'bg-white/85 backdrop-blur-sm rounded-xl p-5 border border-white/20 mb-4' 
+            ? 'bg-white/85 backdrop-blur-sm rounded-xl p-5 border border-white/20 mb-4 dark:bg-slate-800/90 dark:border-slate-700' 
             : isSelected 
-                ? 'bg-japan-blue text-white p-5 pl-6' 
-                : 'hover:bg-gray-50 text-ink p-5 pl-6 border-b border-gray-100 last:border-0'
+                ? 'bg-japan-blue text-white p-5 pl-6 dark:bg-sky-700' 
+                : 'hover:bg-gray-50 text-ink p-5 pl-6 border-b border-gray-100 last:border-0 dark:text-slate-100 dark:hover:bg-slate-800 dark:border-slate-800'
         }
-        ${isHome && !isOverlay ? 'hover:bg-white hover:shadow-2xl hover:scale-[1.02]' : ''}
-        ${isOverlay ? 'shadow-2xl scale-105 bg-white ring-2 ring-japan-blue rotate-2 cursor-grabbing' : ''}
+        ${isHome && !isOverlay ? 'hover:bg-white hover:shadow-2xl hover:scale-[1.02] dark:hover:bg-slate-800' : ''}
+        ${isOverlay ? 'shadow-2xl scale-105 bg-white ring-2 ring-japan-blue rotate-2 cursor-grabbing dark:bg-slate-800 dark:ring-sky-500' : ''}
         ${!isHome && 'h-[80px] flex justify-center items-center lg:block lg:h-auto'}
       `}
     >
@@ -58,7 +58,7 @@ export const DayCard: React.FC<DayCardProps> = ({
            {onDelete && (
              <button 
                 onClick={onDelete}
-                className="p-1.5 rounded-full transition-colors text-gray-300 hover:text-red-500 hover:bg-red-50"
+                className="p-1.5 rounded-full transition-colors text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
                 title="刪除此日行程"
              >
                 <Trash2 size={14} />
@@ -68,7 +68,7 @@ export const DayCard: React.FC<DayCardProps> = ({
            <div 
               {...attributes} 
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1.5 rounded-md text-gray-300 hover:text-gray-500 hover:bg-gray-100 touch-none"
+              className="cursor-grab active:cursor-grabbing p-1.5 rounded-md text-gray-300 hover:text-gray-500 hover:bg-gray-100 touch-none dark:hover:bg-slate-700"
            >
               <GripVertical size={16} />
            </div>
@@ -80,13 +80,13 @@ export const DayCard: React.FC<DayCardProps> = ({
         {/* Home Mode Layout */}
         {isHome && (
           <div className="flex items-center gap-5">
-            <div className="flex flex-col items-center justify-center min-w-[60px] border-r border-gray-300 pr-4">
-              <span className="text-2xl font-serif font-bold text-japan-blue">{day.date.split('/')[1]}</span>
-              <span className="text-xs text-gray-500 uppercase font-bold">{day.weekday}</span>
+            <div className="flex flex-col items-center justify-center min-w-[60px] border-r border-gray-300 pr-4 dark:border-slate-600">
+              <span className="text-2xl font-serif font-bold text-japan-blue dark:text-sky-400">{day.date.split('/')[1]}</span>
+              <span className="text-xs text-gray-500 uppercase font-bold dark:text-slate-400">{day.weekday}</span>
             </div>
             <div className="flex-1 pr-12">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-serif font-bold text-xl text-ink">{day.title}</h3>
+                <h3 className="font-serif font-bold text-xl text-ink dark:text-slate-100">{day.title}</h3>
                 {day.pass && (
                   <span 
                     className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full whitespace-nowrap"
@@ -98,7 +98,7 @@ export const DayCard: React.FC<DayCardProps> = ({
               </div>
 
               {/* Time & Accommodation Info */}
-              <div className="flex items-center gap-3 mb-2 text-xs font-bold text-gray-400">
+              <div className="flex items-center gap-3 mb-2 text-xs font-bold text-gray-400 dark:text-slate-400">
                  {timeRange && (
                    <div className="flex items-center gap-1">
                       <Clock size={12} />
@@ -113,7 +113,7 @@ export const DayCard: React.FC<DayCardProps> = ({
                  )}
               </div>
 
-              <p className="text-sm text-gray-600 line-clamp-none">{day.desc}</p>
+              <p className="text-sm text-gray-600 line-clamp-none dark:text-slate-300">{day.desc}</p>
             </div>
           </div>
         )}
@@ -121,20 +121,20 @@ export const DayCard: React.FC<DayCardProps> = ({
         {/* Sidebar Mode Layout */}
         {!isHome && (
           <div className={`flex items-center ${!isHome ? 'flex-col lg:flex-row' : 'flex-row'}`}>
-            {isSelected && <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 bg-japan-red" />}
+            {isSelected && <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 bg-japan-red dark:bg-sky-400" />}
             
-            <div className={`flex flex-col items-center justify-center transition-all ${!isHome ? 'lg:mr-4' : 'mr-5'} ${!isSelected && !isHome ? 'text-gray-400' : ''}`}>
+            <div className={`flex flex-col items-center justify-center transition-all ${!isHome ? 'lg:mr-4' : 'mr-5'} ${!isSelected && !isHome ? 'text-gray-400 dark:text-slate-500' : ''}`}>
               <span className={`font-serif font-bold leading-none ${isSelected ? 'text-lg lg:text-2xl' : 'text-2xl'}`}>
                 {day.date.split('/')[1]}
               </span>
-              <span className={`text-[10px] uppercase mt-1 ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
+              <span className={`text-[10px] uppercase mt-1 ${isSelected ? 'text-white/80' : 'text-gray-400 dark:text-slate-500'}`}>
                 {day.weekday}
               </span>
             </div>
 
             <div className="hidden lg:block flex-1 min-w-0 pr-2">
               <div className="flex justify-between items-center mb-1">
-                <h3 className={`font-bold text-lg font-serif truncate ${isSelected ? 'text-white' : 'text-ink'}`}>
+                <h3 className={`font-bold text-lg font-serif truncate ${isSelected ? 'text-white' : 'text-ink dark:text-slate-200'}`}>
                   {day.title}
                 </h3>
                 {day.pass && !isSelected && (
@@ -150,7 +150,7 @@ export const DayCard: React.FC<DayCardProps> = ({
                   </span>
                 )}
               </div>
-              <p className={`text-sm truncate ${isSelected ? 'text-white/70' : 'text-gray-500'}`}>
+              <p className={`text-sm truncate ${isSelected ? 'text-white/70' : 'text-gray-500 dark:text-slate-400'}`}>
                 {day.desc}
               </p>
             </div>

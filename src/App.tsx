@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus } from 'lucide-react';
+import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus, Moon } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
@@ -17,6 +17,7 @@ const STORAGE_KEY = 'kansai-trip-2026-v4';
 const SETTINGS_KEY = 'kansai-trip-settings';
 const EXPENSE_KEY = 'kansai-trip-expenses';
 const CHECKLIST_KEY = 'kansai-trip-checklist';
+const DARK_MODE_KEY = 'kansai-trip-dark-mode';
 
 const App: React.FC = () => {
   // 1. Trip Settings
@@ -62,6 +63,12 @@ const App: React.FC = () => {
     return []; // Empty, Toolbox will initialize default categories
   });
 
+  // 4. Dark Mode State
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem(DARK_MODE_KEY);
+    return saved ? JSON.parse(saved) : false;
+  });
+
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isToolboxOpen, setIsToolboxOpen] = useState(false);
@@ -87,6 +94,16 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem(SETTINGS_KEY, JSON.stringify(tripSettings)); }, [tripSettings]);
   useEffect(() => { localStorage.setItem(EXPENSE_KEY, JSON.stringify(expenses)); }, [expenses]);
   useEffect(() => { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklist)); }, [checklist]);
+  
+  // Dark Mode Effect
+  useEffect(() => {
+    localStorage.setItem(DARK_MODE_KEY, JSON.stringify(isDarkMode));
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   const handleHome = () => setSelectedDayIndex(null);
   const handleDaySelect = (index: number) => setSelectedDayIndex(index);
@@ -249,6 +266,10 @@ const App: React.FC = () => {
     });
   };
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
   const isHome = selectedDayIndex === null;
   const selectedDay = selectedDayIndex !== null ? itineraryData[selectedDayIndex] : null;
   const activeDragItem = activeDragId ? itineraryData.find(d => d.id === activeDragId) : null;
@@ -271,8 +292,8 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper"
-      style={{ backgroundImage: `url("${WASHI_PATTERN}")` }}
+      className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300"
+      style={{ backgroundImage: isDarkMode ? 'none' : `url("${WASHI_PATTERN}")` }}
     >
       <TripSetup isOpen={isSetupOpen} onClose={() => setIsSetupOpen(false)} onSetup={handleSetupTrip} />
 
@@ -303,14 +324,14 @@ const App: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-linear transform scale-105"
         style={{ backgroundImage: `url('${HERO_IMAGE}')` }}
       />
-      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-500 ${isHome ? 'opacity-100' : 'opacity-0'}`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-500 ${isHome ? 'opacity-100' : 'opacity-0'} dark:from-slate-950/90 dark:via-black/60`} />
 
       {/* Main Container */}
       <div className="absolute inset-0 flex flex-row overflow-hidden">
         
         {/* Sidebar */}
         <div 
-           className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 pt-[env(safe-area-inset-top)] ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60'}`}
+           className={`relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 pt-[env(safe-area-inset-top)] ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60 dark:bg-slate-900/90 dark:border-slate-700/60'}`}
         >
           
           {/* Sidebar Header */}
@@ -325,12 +346,12 @@ const App: React.FC = () => {
              <div className="mt-4 w-16 h-1 bg-japan-red shadow-lg rounded-full"></div>
           </div>
 
-          <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50 ${!isHome ? 'hidden lg:block opacity-100' : 'hidden opacity-0'}`}>
-            <div className="flex items-center justify-center gap-2 mb-1 text-japan-blue/80">
+          <div onClick={handleHome} className={`cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50 dark:hover:bg-slate-800 ${!isHome ? 'hidden lg:block opacity-100' : 'hidden opacity-0'}`}>
+            <div className="flex items-center justify-center gap-2 mb-1 text-japan-blue/80 dark:text-sky-400">
               {getSeasonIcon(tripSettings.season, 16)}
               <span className="text-xs font-bold tracking-[0.2em] uppercase">{tripSettings.startDate.split('-')[0]}</span>
             </div>
-            <h1 className="text-2xl font-serif font-bold text-japan-blue tracking-widest line-clamp-1">
+            <h1 className="text-2xl font-serif font-bold text-japan-blue dark:text-sky-400 tracking-widest line-clamp-1">
               {tripSettings.name}
             </h1>
           </div>
@@ -363,7 +384,7 @@ const App: React.FC = () => {
                 <button 
                   onClick={handleAddDay}
                   className={`
-                    w-full mt-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-japan-blue hover:text-japan-blue hover:bg-white/50 transition-all flex items-center justify-center gap-2 font-bold mb-8
+                    w-full mt-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-japan-blue hover:text-japan-blue hover:bg-white/50 transition-all flex items-center justify-center gap-2 font-bold mb-8 dark:border-slate-600 dark:text-slate-500 dark:hover:border-sky-400 dark:hover:text-sky-400 dark:hover:bg-slate-800
                     ${!isHome ? 'hidden lg:flex' : ''}
                   `}
                 >
@@ -374,7 +395,7 @@ const App: React.FC = () => {
                 {!isHome && (
                    <button 
                     onClick={handleAddDay}
-                    className="lg:hidden mx-auto mt-4 w-10 h-10 rounded-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-japan-blue hover:text-japan-blue flex items-center justify-center"
+                    className="lg:hidden mx-auto mt-4 w-10 h-10 rounded-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-japan-blue hover:text-japan-blue flex items-center justify-center dark:border-slate-600 dark:text-slate-500 dark:hover:border-sky-400 dark:hover:text-sky-400"
                    >
                      <Plus size={20} />
                    </button>
@@ -400,7 +421,11 @@ const App: React.FC = () => {
           
           {/* Action Buttons */}
           <div className={`absolute z-30 flex items-center gap-3 transition-all ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse lg:flex-row lg:bottom-6'}`}>
-            <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700'}`}>
+            <button onClick={toggleDarkMode} title={isDarkMode ? "切換亮色模式" : "切換深色模式"} className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700'}`}>
+                {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            <button onClick={handleReset} title="恢復為預設行程" className={`p-2 rounded-full shadow-lg transition-all ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}>
                <RotateCcw size={16} />
             </button>
 
@@ -412,7 +437,7 @@ const App: React.FC = () => {
                <Briefcase size={18} />
             </button>
 
-             <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white'}`}>
+             <button onClick={() => setIsAIModalOpen(true)} className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all font-bold group ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white' : 'bg-japan-blue hover:bg-japan-blue/90 text-white dark:bg-sky-600 dark:hover:bg-sky-500'}`}>
                <Sparkles size={16} className={isHome ? "group-hover:text-yellow-300 transition-colors" : ""} />
                <span className={`${!isHome ? 'hidden lg:inline' : ''}`}>AI 排程</span>
             </button>
