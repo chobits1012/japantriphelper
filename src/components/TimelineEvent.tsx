@@ -1,5 +1,5 @@
 import React from 'react';
-import { Train, Plane, MapPin, Camera, Utensils, ShoppingBag, BedDouble, Ticket, ExternalLink } from 'lucide-react';
+import { Train, Plane, MapPin, Camera, Utensils, ShoppingBag, BedDouble, Ticket, ExternalLink, Search } from 'lucide-react';
 import type { ItineraryEvent, EventCategory } from '../types';
 
 interface TimelineEventProps {
@@ -41,6 +41,12 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
   };
 
+  const handleJorudanClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Open Traditional Chinese version of Jorudan
+    window.open('https://world.jorudan.co.jp/mln/zh-tw/', '_blank');
+  };
+
   return (
     <div className={`relative pl-8 mb-8 last:mb-0 group`}>
       {/* Time Dot */}
@@ -73,16 +79,30 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
             {event.title}
           </h4>
           
-          {/* Map Button */}
-          {(event.mapQuery || event.category === 'sightseeing' || event.category === 'food' || event.category === 'hotel') && (
-            <button 
-              onClick={handleMapClick}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-japan-blue"
-              title="在 Google 地圖中查看"
-            >
-              <ExternalLink size={16} />
-            </button>
-          )}
+          {/* Action Buttons Container */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Jorudan Button (Only for Transport) */}
+            {event.category === 'transport' && (
+               <button 
+                 onClick={handleJorudanClick}
+                 className="p-1.5 hover:bg-green-50 rounded-full text-gray-400 hover:text-green-600 transition-colors"
+                 title="查詢乘換案內 (Jorudan)"
+               >
+                 <Search size={16} />
+               </button>
+            )}
+
+            {/* Google Map Button */}
+            {(event.mapQuery || event.category === 'sightseeing' || event.category === 'food' || event.category === 'hotel') && (
+              <button 
+                onClick={handleMapClick}
+                className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-japan-blue transition-colors"
+                title="在 Google 地圖中查看"
+              >
+                <ExternalLink size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed bg-white/60 backdrop-blur-sm px-4 py-3 rounded-lg shadow-sm border border-white/50 w-full md:w-auto hover:bg-white/80 transition-colors">
