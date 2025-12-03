@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, Download, Upload, Copy, Check, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, PieChart } from 'lucide-react';
+import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, Upload, Copy, Check } from 'lucide-react';
 import LZString from 'lz-string';
 import type { ExpenseItem, ChecklistCategory, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
@@ -77,12 +77,13 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
 
   // Fetch Exchange Rate
   useEffect(() => {
-    if (isOpen && activeTab === 'currency') {
+    if (isOpen) {
       fetchRate();
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen]);
 
   const fetchRate = async () => {
+    if (activeTab !== 'currency' && rate !== 0.215) return; // Only fetch if needed or if using default
     setLoadingRate(true);
     try {
       const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
@@ -154,6 +155,8 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   const budget = tripSettings.budgetJPY || 0;
   const remaining = budget - totalJPY;
   const percentSpent = budget > 0 ? Math.min((totalJPY / budget) * 100, 100) : 0;
+
+  const toTWD = (jpy: number) => `NT$ ${Math.round(jpy * rate).toLocaleString()}`;
 
   const categoryStats = useMemo(() => {
     const stats: Record<string, number> = { food: 0, shopping: 0, transport: 0, hotel: 0, other: 0 };
@@ -240,7 +243,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       return cat;
     }));
 
-    // Clear input but keep focus logic is handled by React state update
+    // Keep focus logic relies on the input remaining rendered
     setNewItemInputs(prev => ({ ...prev, [catId]: '' }));
   };
 
@@ -444,11 +447,13 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                       autoFocus
                     />
                  ) : (
-                    <div className="flex items-baseline gap-2">
-                       <span className="text-3xl font-mono font-bold text-ink">
-                         ¥{(tripSettings.budgetJPY || 0).toLocaleString()}
-                       </span>
-                       <span className="text-xs text-gray-400">總預算</span>
+                    <div className="flex flex-col">
+                       <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-mono font-bold text-ink">
+                            ¥{(tripSettings.budgetJPY || 0).toLocaleString()}
+                          </span>
+                       </div>
+                       <span className="text-xs text-gray-400 font-mono">({toTWD(tripSettings.budgetJPY || 0)})</span>
                     </div>
                  )}
               </div>
@@ -459,12 +464,14 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                     <div>
                        <p className="text-xs font-bold text-gray-400">已支出</p>
                        <p className="text-xl font-mono font-bold text-japan-blue">¥{totalJPY.toLocaleString()}</p>
+                       <p className="text-[10px] text-gray-400 font-mono">{toTWD(totalJPY)}</p>
                     </div>
                     <div className="text-right">
                        <p className="text-xs font-bold text-gray-400">剩餘</p>
                        <p className={`text-xl font-mono font-bold ${remaining < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
                          ¥{remaining.toLocaleString()}
                        </p>
+                       <p className="text-[10px] text-gray-400 font-mono">{toTWD(remaining)}</p>
                     </div>
                  </div>
 
@@ -678,7 +685,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                              onKeyDown={e => {
                                                 if(e.key === 'Enter') handleSaveTitle(cat.id);
                                              }}
-                                             className="text-sm font-bold p-1 border border-japan-blue rounded outline-none w-full bg-white"
+                                             className="text-sm font-bold p-1 border border-japan-blue rounded outline-none w-full bg-white min-w-0"
                                              autoFocus
                                           />
                                        </div>
@@ -726,8 +733,8 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                                   >
                                      <div className="flex items-center gap-3 min-w-0">
                                         <div className={`
-                                           w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0
-                                           ${item.checked ? 'bg-japan-blue border-japan-blue text-white' : 'border-gray-300 bg-white'}
+                                           w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition-colors flex-shrink-0
+                                           ${item.checked ? 'bg-japan-blue border-japan-blue text-white' : 'bg-white'}
                                         `}>
                                            {item.checked && <Check size={10} />}
                                         </div>
