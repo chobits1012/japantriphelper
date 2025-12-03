@@ -83,7 +83,10 @@ export const DayCard: React.FC<DayCardProps> = ({
               <div className="flex items-center justify-between mb-1">
                 <h3 className="font-serif font-bold text-xl text-ink">{day.title}</h3>
                 {day.pass && (
-                  <span className="text-[10px] font-bold text-white bg-japan-red px-2 py-0.5 rounded-full whitespace-nowrap">
+                  <span 
+                    className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full whitespace-nowrap"
+                    style={{ backgroundColor: day.passColor || '#c93a40' }}
+                  >
                     {getPassShortLabel(day.passName)}
                   </span>
                 )}
@@ -113,7 +116,14 @@ export const DayCard: React.FC<DayCardProps> = ({
                   {day.title}
                 </h3>
                 {day.pass && !isSelected && (
-                  <span className="text-[10px] font-bold text-japan-red border border-japan-red/30 px-1.5 rounded bg-red-50 whitespace-nowrap">
+                  <span 
+                    className="text-[10px] font-bold border px-1.5 rounded whitespace-nowrap"
+                    style={{ 
+                      color: day.passColor || '#c93a40',
+                      borderColor: (day.passColor || '#c93a40') + '4d', // 30% opacity hex
+                      backgroundColor: (day.passColor || '#c93a40') + '1a' // 10% opacity hex
+                    }}
+                  >
                     {getPassShortLabel(day.passName)}
                   </span>
                 )}

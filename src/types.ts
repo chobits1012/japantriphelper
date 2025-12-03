@@ -42,6 +42,7 @@ export interface ItineraryDay {
   accommodation?: Accommodation;
   events: ItineraryEvent[];
   passName?: string;
+  passColor?: string; // Hex color code for the pass badge
 }
 
 // New Types for Travel Toolbox

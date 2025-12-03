@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
 import TimelineEvent from './TimelineEvent';
-import { REGIONS, REGIONAL_PASSES } from '../constants';
+import { REGIONS, REGIONAL_PASSES, PASS_COLORS } from '../constants';
 
 interface DetailPanelProps {
   day: ItineraryDay;
@@ -36,7 +36,6 @@ const getLiveWeatherIcon = (code: number, size = 16) => {
   return <Cloud className="text-gray-400" size={size} />;
 };
 
-// Helper to map common Chinese location names to English for better API accuracy
 const getLocationQuery = (loc: string) => {
   const mapping: Record<string, string> = {
     '京都': 'Kyoto',
@@ -53,7 +52,7 @@ const getLocationQuery = (loc: string) => {
     '滋賀': 'Shiga',
     '近江八幡': 'Omihachiman',
     '高島': 'Takashima',
-    '白鬚': 'Takashima', // Shirahige shrine is in Takashima
+    '白鬚': 'Takashima',
     '伊根': 'Ine',
     '天橋立': 'Miyazu',
     '舞鶴': 'Maizuru',
@@ -85,7 +84,6 @@ const getLocationQuery = (loc: string) => {
     if (loc.includes(key)) return mapping[key];
   }
 
-  // Fallback: If it contains spaces, take the last part (usually the specific city)
   if (loc.includes(' ')) {
      const parts = loc.split(' ');
      return parts[parts.length - 1]; 
@@ -103,6 +101,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const [selectedPass, setSelectedPass] = useState<string>('');
   const [customPassName, setCustomPassName] = useState<string>('');
   const [passDuration, setPassDuration] = useState<number>(1);
+  const [passColor, setPassColor] = useState<string>(PASS_COLORS[0].value); // NEW: Color state
   const isCustomPass = selectedPass === 'custom';
 
   // Live Weather State
@@ -119,6 +118,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     setSelectedPass('');
     setCustomPassName('');
     setPassDuration(1);
+    setPassColor(PASS_COLORS[0].value); // Reset color default
     
     setLiveWeather(null);
     setForecast([]);
@@ -126,7 +126,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     const fetchWeather = async () => {
       if (!day.location) return;
 
-      // Use the helper to get a better query string
       const queryLocation = getLocationQuery(day.location);
 
       setLoadingWeather(true);
@@ -173,7 +172,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     fetchWeather();
   }, [day]);
 
-  // Handle saving text edits (Title, Desc, Events)
   const handleSaveText = () => {
     const sortedEvents = [...editData.events].sort((a, b) => a.time.localeCompare(b.time));
     const currentDayUpdate = { ...editData, events: sortedEvents };
@@ -182,7 +180,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     setIsEditing(false);
   };
 
-  // Handle applying pass to multiple days
   const handleBatchApplyPass = () => {
     const finalPassName = isCustomPass ? customPassName : selectedPass;
     if (!finalPassName) {
@@ -194,18 +191,17 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     const startIndex = allDays.findIndex(d => d.day === day.day);
 
     if (startIndex !== -1) {
-        // Prepare updates for N days
         for (let i = 0; i < passDuration; i++) {
             if (startIndex + i < allDays.length) {
                 const targetDay = allDays[startIndex + i];
-                // If it's the current day, we also want to preserve any text edits currently in the inputs
                 const isCurrentDay = i === 0;
                 const baseData = isCurrentDay ? editData : targetDay;
 
                 updates.push({
                     ...baseData,
                     pass: true,
-                    passName: finalPassName
+                    passName: finalPassName,
+                    passColor: passColor // Apply selected color
                 });
             }
         }
@@ -215,7 +211,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     }
   };
 
-  // Handle removing pass from multiple days
   const handleBatchRemovePass = () => {
      if (!window.confirm(`確定要從今天開始，移除連續 ${passDuration} 天的交通票券設定嗎？`)) return;
 
@@ -232,7 +227,8 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                 updates.push({
                     ...baseData,
                     pass: false,
-                    passName: undefined
+                    passName: undefined,
+                    passColor: undefined
                 });
             }
         }
@@ -270,6 +266,14 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const key = day.day;
   const weatherUrl = `https://www.google.com/search?q=${encodeURIComponent(day.location + " 天氣")}`;
 
+  // Helper to adjust color opacity
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   return (
     <div 
       key={key}
@@ -285,7 +289,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         </>
       )}
 
-      {/* Floating Action Buttons (Absolute Top Right with Safe Area Support) */}
+      {/* Floating Action Buttons */}
       <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-5 md:top-8 md:right-8 z-50 flex items-center gap-2 transition-all">
           {isEditing ? (
             <>
@@ -325,7 +329,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
 
       <div className="flex-1 overflow-y-auto relative z-10 px-6 py-8 md:px-12 md:py-10 no-scrollbar pb-32 safe-area-bottom">
         
-        {/* Navigation Bar Info (Buttons moved out) */}
+        {/* Navigation Bar Info */}
         <div className="mb-8 pt-4">
              <div className="flex items-center gap-4">
               <span className="text-4xl font-serif font-bold text-japan-blue/20 select-none">
@@ -405,7 +409,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                </div>
                
                <div className="flex flex-col gap-3">
-                  {/* Vertical Stack for Selects - Full width for mobile friendliness */}
+                  {/* Selects */}
                   <div className="flex flex-col gap-3">
                       <select 
                         value={selectedRegion}
@@ -439,6 +443,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                       </select>
                   </div>
                   
+                  {/* Custom Name & Duration */}
                   <div className="flex gap-2 items-center">
                       {isCustomPass ? (
                         <input 
@@ -463,6 +468,22 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
                            <option key={d} value={d}>{d} 天</option>
                          ))}
                       </select>
+                  </div>
+
+                  {/* NEW: Color Selector */}
+                  <div className="flex items-center gap-3 py-2 border-t border-red-100/50">
+                     <span className="text-xs font-bold text-gray-400">標籤顏色:</span>
+                     <div className="flex gap-2">
+                        {PASS_COLORS.map((c) => (
+                           <button
+                             key={c.value}
+                             onClick={() => setPassColor(c.value)}
+                             className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${passColor === c.value ? 'border-gray-400 scale-110 shadow-sm' : 'border-transparent opacity-80 hover:opacity-100'}`}
+                             style={{ backgroundColor: c.value }}
+                             title={c.name}
+                           />
+                        ))}
+                     </div>
                   </div>
 
                   {/* Batch Action Buttons */}
@@ -618,16 +639,28 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               </p>
             </div>
 
-            {/* Transport Pass Badge in Detail View - Small & Clean */}
+            {/* Transport Pass Badge in Detail View - Dynamic Color */}
             {day.pass && (
               <div className="max-w-3xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-2">
-                 <div className="inline-flex items-center gap-3 bg-red-50 border border-red-100 pr-4 pl-2 py-2 rounded-lg shadow-sm">
-                    <div className="bg-japan-red text-white p-1 rounded">
+                 <div 
+                   className="inline-flex items-center gap-3 pr-4 pl-2 py-2 rounded-lg shadow-sm border"
+                   style={{ 
+                     backgroundColor: hexToRgba(day.passColor || '#c93a40', 0.05),
+                     borderColor: hexToRgba(day.passColor || '#c93a40', 0.2)
+                   }}
+                 >
+                    <div 
+                      className="text-white p-1 rounded"
+                      style={{ backgroundColor: day.passColor || '#c93a40' }}
+                    >
                        <Train size={14} />
                     </div>
                     <div>
                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-0.5">交通票券</p>
-                       <p className="text-japan-red font-bold text-sm leading-none">
+                       <p 
+                         className="font-bold text-sm leading-none"
+                         style={{ color: day.passColor || '#c93a40' }}
+                       >
                          {day.passName || 'JR PASS'}
                        </p>
                     </div>
