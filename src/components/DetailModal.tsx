@@ -663,45 +663,44 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               </p>
             </div>
 
-            {/* Transport Pass Badge in Detail View - Dynamic Color */}
-            {day.pass && (
-              <div className="max-w-3xl mx-auto mb-6 animate-in fade-in slide-in-from-bottom-2">
-                 <div 
-                   className="inline-flex items-center gap-3 pr-4 pl-2 py-2 rounded-lg shadow-sm border"
-                   style={{ 
-                     backgroundColor: hexToRgba(day.passColor || '#c93a40', 0.05),
-                     borderColor: hexToRgba(day.passColor || '#c93a40', 0.2)
-                   }}
-                 >
-                    <div 
-                      className="text-white p-1 rounded"
-                      style={{ backgroundColor: day.passColor || '#c93a40' }}
-                    >
-                       <Train size={14} />
-                    </div>
-                    <div>
-                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-0.5">交通票券</p>
-                       <p 
-                         className="font-bold text-sm leading-none"
-                         style={{ color: day.passColor || '#c93a40' }}
-                       >
-                         {day.passName || 'JR PASS'}
-                       </p>
-                    </div>
-                 </div>
-              </div>
-            )}
+            {/* Unified Info Bar: Transport Pass + View Route */}
+            {(day.pass || day.events.filter(e => e.mapQuery).length >= 2) && (
+              <div className="max-w-3xl mx-auto mb-10 pl-2 md:pl-4 flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+                 
+                 {/* Transport Pass Badge */}
+                 {day.pass && (
+                   <div 
+                     className="inline-flex items-center gap-2 pr-3 pl-1.5 py-1.5 rounded-lg border shadow-sm"
+                     style={{ 
+                       backgroundColor: hexToRgba(day.passColor || '#c93a40', 0.05),
+                       borderColor: hexToRgba(day.passColor || '#c93a40', 0.2)
+                     }}
+                   >
+                      <div 
+                        className="text-white p-1 rounded"
+                        style={{ backgroundColor: day.passColor || '#c93a40' }}
+                      >
+                         <Train size={12} />
+                      </div>
+                      <span 
+                        className="font-bold text-xs"
+                        style={{ color: day.passColor || '#c93a40' }}
+                      >
+                        {day.passName || 'JR PASS'}
+                      </span>
+                   </div>
+                 )}
 
-            {/* View Route Button */}
-            {day.events.filter(e => e.mapQuery).length >= 2 && (
-              <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-3 pl-2 md:pl-4">
-                <button
-                  onClick={handleViewRoute}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl shadow-sm text-japan-blue font-bold hover:bg-gray-50 hover:shadow-md transition-all group"
-                >
-                  <MapIcon size={18} className="group-hover:scale-110 transition-transform" />
-                  <span>查看當日路線 (Google Maps)</span>
-                </button>
+                 {/* Compact View Route Button */}
+                 {day.events.filter(e => e.mapQuery).length >= 2 && (
+                    <button
+                      onClick={handleViewRoute}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:text-japan-blue hover:border-japan-blue/30 transition-all shadow-sm group"
+                    >
+                      <MapIcon size={14} className="group-hover:scale-110 transition-transform text-japan-blue" />
+                      <span>查看路線</span>
+                    </button>
+                 )}
               </div>
             )}
 
