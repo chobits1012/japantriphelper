@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, Trash2, Clock, BedDouble } from 'lucide-react';
 import { ItineraryDay } from '../types';
 
 interface DayCardProps {
@@ -30,6 +30,11 @@ export const DayCard: React.FC<DayCardProps> = ({
   innerRef,
   isOverlay
 }) => {
+  // Calculate time range
+  const startTime = day.events.length > 0 ? day.events[0].time : null;
+  const endTime = day.events.length > 0 ? day.events[day.events.length - 1].time : null;
+  const timeRange = startTime && endTime ? `${startTime} - ${endTime}` : startTime || endTime;
+
   return (
     <div
       ref={innerRef}
@@ -91,6 +96,23 @@ export const DayCard: React.FC<DayCardProps> = ({
                   </span>
                 )}
               </div>
+
+              {/* Time & Accommodation Info */}
+              <div className="flex items-center gap-3 mb-2 text-xs font-bold text-gray-400">
+                 {timeRange && (
+                   <div className="flex items-center gap-1">
+                      <Clock size={12} />
+                      <span>{timeRange}</span>
+                   </div>
+                 )}
+                 {day.accommodation && (
+                   <div className="flex items-center gap-1">
+                      <BedDouble size={12} />
+                      <span className="truncate max-w-[150px]">{day.accommodation.name}</span>
+                   </div>
+                 )}
+              </div>
+
               <p className="text-sm text-gray-600 line-clamp-none">{day.desc}</p>
             </div>
           </div>
