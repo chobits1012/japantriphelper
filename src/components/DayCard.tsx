@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { GripVertical, Trash2, Clock, BedDouble } from 'lucide-react';
 import { ItineraryDay } from '../types';
