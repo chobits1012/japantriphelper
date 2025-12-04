@@ -292,7 +292,8 @@ const App: React.FC = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-950 dark:text-slate-100 transition-colors duration-1000">
-      {/* Washi Pattern Overlay with Fade Transition */}
+      
+      {/* Washi Pattern Layer - Separate div for smooth opacity transition */}
       <div 
         className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
         style={{ backgroundImage: `url("${WASHI_PATTERN}")` }}
@@ -327,7 +328,12 @@ const App: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-linear transform scale-105"
         style={{ backgroundImage: `url('${HERO_IMAGE}')` }}
       />
-      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-1000 ${isHome ? 'opacity-100' : 'opacity-0'} dark:from-slate-950/90 dark:via-black/60`} />
+      
+      {/* DOUBLE LAYER GRADIENT FOR SMOOTH CROSS-FADE */}
+      {/* Light Mode Gradient */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-1000 ${isHome && !isDarkMode ? 'opacity-100' : 'opacity-0'}`} />
+      {/* Dark Mode Gradient */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/90 via-black/60 to-black/40 transition-opacity duration-1000 ${isHome && isDarkMode ? 'opacity-100' : 'opacity-0'}`} />
 
       {/* Main Container */}
       <div className="absolute inset-0 flex flex-row overflow-hidden">
