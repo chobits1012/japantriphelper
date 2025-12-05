@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus, Moon } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -15,7 +15,6 @@ import TripSetup from './components/TripSetup';
 import { SortableDayCard } from './components/SortableDayCard';
 import { DayCard } from './components/DayCard';
 
-const STORAGE_KEY = 'kansai-trip-2026-v4';
 const SETTINGS_KEY = 'kansai-trip-settings';
 const EXPENSE_KEY = 'kansai-trip-expenses';
 const CHECKLIST_KEY = 'kansai-trip-checklist';
@@ -25,7 +24,7 @@ const App: React.FC = () => {
   // 1. Trip Settings
   const [tripSettings, setTripSettings] = useLocalStorage<TripSettings>(SETTINGS_KEY, { name: "關西冬之旅", startDate: "2026-01-23", season: 'winter' });
   
-  // 2. Itinerary State (now managed by a custom hook)
+  // 2. Itinerary State (managed by a custom hook)
   const {
     itineraryData,
     setItineraryData,
@@ -33,7 +32,6 @@ const App: React.FC = () => {
     deleteDay,
     reorderDays,
     updateDay,
-    recalculateDates,
   } = useItinerary(tripSettings);
   
   // 3. UI State (managed by a custom hook)
@@ -53,16 +51,12 @@ const App: React.FC = () => {
 
   const [expenses, setExpenses] = useLocalStorage<ExpenseItem[]>(EXPENSE_KEY, []);
 
-  // 3. Checklist State (Categorized + Auto Migration)
+  // 4. Checklist State (Categorized + Auto Migration)
   const [checklist, setChecklist] = useLocalStorage<ChecklistCategory[]>(CHECKLIST_KEY, () => {
-    // This keeps your excellent migration logic, but encapsulates it.
-    // Note: The useLocalStorage hook needs to be able to handle a function as initialValue.
-    // I've updated the hook above to support this.
-    const saved = localStorage.getItem(CHECKLIST_KEY); // Check old key one last time
+    const saved = localStorage.getItem(CHECKLIST_KEY);
     if (!saved) return [];
 
     const parsed = JSON.parse(saved);
-    // MIGRATION LOGIC:
     if (Array.isArray(parsed) && parsed.length > 0 && 'text' in parsed[0]) {
         return [{
           id: 'migrated-default',
@@ -75,14 +69,14 @@ const App: React.FC = () => {
     return [];
   });
 
-  // 4. Dark Mode State
+  // 5. Dark Mode State
   const [isDarkMode, setIsDarkMode] = useLocalStorage<boolean>(DARK_MODE_KEY, false);
 
   // DnD Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px movement to start drag (prevents accidental drag on tap)
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -97,7 +91,7 @@ const App: React.FC = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [isDarkMode]);
+  });
 
   // Drag Handlers
   const handleDragStart = (event: DragStartEvent) => {
@@ -122,15 +116,14 @@ const App: React.FC = () => {
   };
 
   const handleDeleteDay = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     if (window.confirm("確定要刪除這一整天的行程嗎？刪除後無法復原。")) deleteDay(id);
-    if (selectedDayIndex !== null) setSelectedDayIndex(null); // Go home to avoid index error
+    if (selectedDayIndex !== null) setSelectedDayIndex(null);
   };
 
   const handleReset = () => {
     if (window.confirm('⚠️ 確定要恢復為預設的「關西冬之旅」嗎？\n\n目前的編輯與行程將會被覆蓋為預設值。\n(記帳與檢查清單不會被刪除)')) {
-      // Add IDs to default data
-      const defaultWithIds = ITINERARY_DATA.map(d => ({ ...d, id: Math.random().toString(36).substr(2, 9) }));
+      const defaultWithIds = ITINERARY_DATA.map(d => ({ ...d, id: d.id || Math.random().toString(36).substr(2, 9) }));
       setItineraryData(defaultWithIds);
       setTripSettings({ name: "關西冬之旅", startDate: "2026-01-23", season: 'winter' });
       setSelectedDayIndex(null);
@@ -182,7 +175,6 @@ const App: React.FC = () => {
         const newDaysMap = new Map(daysWithIds.map(d => [d.day, d]));
         return prevData.map(day => {
            const newData = newDaysMap.get(day.day);
-           // Keep the original ID to prevent weird jumps
            return newData ? { ...newData, id: day.id } : day;
         });
       });
@@ -210,7 +202,6 @@ const App: React.FC = () => {
     }
   };
 
-  // 優化：使用 useMemo 快取 Pass 的使用天數，避免在每次渲染時重複計算
   const passUsageMap = useMemo(() => {
     const usage = new Map<string, number>();
     itineraryData.forEach(day => {
@@ -224,7 +215,6 @@ const App: React.FC = () => {
   return (
     <div className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-950 dark:text-slate-100 transition-colors duration-1000">
       
-      {/* Washi Pattern Layer - Separate div for smooth opacity transition */}
       <div 
         className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-0' : 'opacity-100'}`}
         style={{ backgroundImage: `url("${WASHI_PATTERN}")` }}
@@ -254,27 +244,20 @@ const App: React.FC = () => {
         onUpdateChecklist={setChecklist}
       />
 
-      {/* Hero Background */}
       <div 
         className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-linear transform scale-105"
         style={{ backgroundImage: `url('${HERO_IMAGE}')` }}
       />
       
-      {/* DOUBLE LAYER GRADIENT FOR SMOOTH CROSS-FADE */}
-      {/* Light Mode Gradient */}
       <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-1000 ${isHome && !isDarkMode ? 'opacity-100' : 'opacity-0'}`} />
-      {/* Dark Mode Gradient */}
       <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/90 via-black/60 to-black/40 transition-opacity duration-1000 ${isHome && isDarkMode ? 'opacity-100' : 'opacity-0'}`} />
 
-      {/* Main Container */}
       <div className="absolute inset-0 flex flex-row overflow-hidden">
         
-        {/* Sidebar */}
         <div 
            className={`relative z-10 flex flex-col transition-all duration-1000 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0 pt-[env(safe-area-inset-top)] ${isHome ? 'w-full bg-transparent' : 'w-[80px] lg:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60 dark:bg-slate-900/90 dark:border-slate-700/60'}`}
         >
           
-          {/* Sidebar Header */}
           <div className={`transition-all duration-1000 flex-shrink-0 relative ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}`}>
              <div className="flex items-center gap-2 mb-3">
                 {getSeasonIcon(tripSettings.season, 24, "animate-pulse")}
@@ -296,7 +279,6 @@ const App: React.FC = () => {
             </h1>
           </div>
 
-          {/* List with Drag and Drop */}
           <DndContext 
             sensors={sensors} 
             collisionDetection={closestCenter} 
@@ -320,7 +302,6 @@ const App: React.FC = () => {
                   ))}
                 </SortableContext>
                 
-                {/* Add Day Button */}
                 <button 
                   onClick={handleAddDay}
                   className={`
@@ -331,7 +312,6 @@ const App: React.FC = () => {
                   <Plus size={20} />
                   新增行程日
                 </button>
-                {/* Mobile/Compact Add Button */}
                 {!isHome && (
                    <button 
                     onClick={handleAddDay}
@@ -345,7 +325,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Drag Overlay for Smooth Animation */}
             <DragOverlay>
               {activeDragItem ? (
                 <DayCard
@@ -359,7 +338,6 @@ const App: React.FC = () => {
             </DragOverlay>
           </DndContext>
           
-          {/* Action Buttons */}
           <div className={`absolute z-30 flex items-center gap-3 transition-all duration-500 ${isHome ? 'bottom-8 left-6 flex-row' : 'bottom-8 left-1/2 transform -translate-x-1/2 flex-col-reverse lg:flex-row lg:bottom-6'}`}>
             <button onClick={toggleDarkMode} title={isDarkMode ? "切換亮色模式" : "切換深色模式"} className={`p-2 rounded-full shadow-lg transition-all duration-500 ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white/70 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700'}`}>
                 {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
@@ -384,7 +362,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Detail Panel */}
         {selectedDay && selectedDayIndex !== null && (
           <div className="flex-1 relative overflow-hidden bg-paper shadow-2xl z-20">
             <DetailPanel 
