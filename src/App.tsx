@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Map as MapIcon, Flower2, Sun, Leaf, Plus, Moon } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import { ITINERARY_DATA, WASHI_PATTERN, HERO_IMAGE } from './constants';
 import type { ItineraryDay, ExpenseItem, ChecklistCategory, TripSeason, TripSettings } from './types';
+import useLocalStorage from './hooks/useLocalStorage';
+import { useItinerary } from './hooks/useItinerary';
+import { useUIState } from './hooks/useUIState';
 import DetailPanel from './components/DetailModal';
 import AIGenerator from './components/AIGenerator';
 import TravelToolbox from './components/TravelToolbox';
@@ -20,61 +23,60 @@ const DARK_MODE_KEY = 'kansai-trip-dark-mode';
 
 const App: React.FC = () => {
   // 1. Trip Settings
-  const [tripSettings, setTripSettings] = useState<TripSettings>(() => {
-    const saved = localStorage.getItem(SETTINGS_KEY);
-    return saved ? JSON.parse(saved) : { name: "關西冬之旅", startDate: "2026-01-23", season: 'winter' };
-  });
+  const [tripSettings, setTripSettings] = useLocalStorage<TripSettings>(SETTINGS_KEY, { name: "關西冬之旅", startDate: "2026-01-23", season: 'winter' });
+  
+  // 2. Itinerary State (now managed by a custom hook)
+  const {
+    itineraryData,
+    setItineraryData,
+    addDay,
+    deleteDay,
+    reorderDays,
+    updateDay,
+    recalculateDates,
+  } = useItinerary(tripSettings);
+  
+  // 3. UI State (managed by a custom hook)
+  const {
+    selectedDayIndex,
+    setSelectedDayIndex,
+    isAIModalOpen,
+    setIsAIModalOpen,
+    isToolboxOpen,
+    setIsToolboxOpen,
+    isSetupOpen,
+    setIsSetupOpen,
+    activeDragId,
+    setActiveDragId,
+    handleHome, handleDaySelect, handleNext, handlePrev, isHome
+  } = useUIState(itineraryData.length);
 
-  // 2. Itinerary State - Ensure IDs exist
-  const [itineraryData, setItineraryData] = useState<ItineraryDay[]>(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    let data = savedData ? JSON.parse(savedData) : ITINERARY_DATA;
-    // Migration: Add ID if missing
-    return data.map((d: any) => ({ ...d, id: d.id || Math.random().toString(36).substr(2, 9) }));
-  });
-
-  const [expenses, setExpenses] = useState<ExpenseItem[]>(() => {
-    const saved = localStorage.getItem(EXPENSE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [expenses, setExpenses] = useLocalStorage<ExpenseItem[]>(EXPENSE_KEY, []);
 
   // 3. Checklist State (Categorized + Auto Migration)
-  const [checklist, setChecklist] = useState<ChecklistCategory[]>(() => {
-    const saved = localStorage.getItem(CHECKLIST_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      
-      // MIGRATION LOGIC: Check if it's the old flat format (array of items with 'text')
-      if (Array.isArray(parsed) && parsed.length > 0 && 'text' in parsed[0]) {
-         return [{
-            id: 'migrated-default',
-            title: '未分類 (舊資料)',
-            items: parsed,
-            isCollapsed: false
-         }];
-      }
-      
-      // New format (array of categories)
-      if (Array.isArray(parsed) && (parsed.length === 0 || 'items' in parsed[0])) {
-         return parsed;
-      }
+  const [checklist, setChecklist] = useLocalStorage<ChecklistCategory[]>(CHECKLIST_KEY, () => {
+    // This keeps your excellent migration logic, but encapsulates it.
+    // Note: The useLocalStorage hook needs to be able to handle a function as initialValue.
+    // I've updated the hook above to support this.
+    const saved = localStorage.getItem(CHECKLIST_KEY); // Check old key one last time
+    if (!saved) return [];
+
+    const parsed = JSON.parse(saved);
+    // MIGRATION LOGIC:
+    if (Array.isArray(parsed) && parsed.length > 0 && 'text' in parsed[0]) {
+        return [{
+          id: 'migrated-default',
+          title: '未分類 (舊資料)',
+          items: parsed,
+          isCollapsed: false
+        }];
     }
-    return []; // Empty, Toolbox will initialize default categories
+    if (Array.isArray(parsed) && (parsed.length === 0 || 'items' in parsed[0])) return parsed;
+    return [];
   });
 
   // 4. Dark Mode State
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem(DARK_MODE_KEY);
-    return saved ? JSON.parse(saved) : false;
-  });
-
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [isToolboxOpen, setIsToolboxOpen] = useState(false);
-  const [isSetupOpen, setIsSetupOpen] = useState(false);
-  
-  // Track active drag item for Overlay
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useLocalStorage<boolean>(DARK_MODE_KEY, false);
 
   // DnD Sensors
   const sensors = useSensors(
@@ -88,44 +90,14 @@ const App: React.FC = () => {
     })
   );
 
-  // Persistence Effects
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(itineraryData)); }, [itineraryData]);
-  useEffect(() => { localStorage.setItem(SETTINGS_KEY, JSON.stringify(tripSettings)); }, [tripSettings]);
-  useEffect(() => { localStorage.setItem(EXPENSE_KEY, JSON.stringify(expenses)); }, [expenses]);
-  useEffect(() => { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklist)); }, [checklist]);
-  
   // Dark Mode Effect
   useEffect(() => {
-    localStorage.setItem(DARK_MODE_KEY, JSON.stringify(isDarkMode));
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
-
-  const handleHome = () => setSelectedDayIndex(null);
-  const handleDaySelect = (index: number) => setSelectedDayIndex(index);
-  const handleNext = () => selectedDayIndex !== null && selectedDayIndex < itineraryData.length - 1 && setSelectedDayIndex(selectedDayIndex + 1);
-  const handlePrev = () => selectedDayIndex !== null && selectedDayIndex > 0 && setSelectedDayIndex(selectedDayIndex - 1);
-
-  // Helper: Recalculate Dates based on start date and index
-  const recalculateDates = (days: ItineraryDay[], startDateStr: string) => {
-    return days.map((day, index) => {
-      const dateObj = new Date(startDateStr);
-      dateObj.setDate(dateObj.getDate() + index);
-      
-      const dateStr = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getDate().toString().padStart(2, '0')}`;
-      const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-
-      return {
-        ...day,
-        day: `Day ${index + 1}`,
-        date: dateStr,
-        weekday: weekday,
-      };
-    });
-  };
 
   // Drag Handlers
   const handleDragStart = (event: DragStartEvent) => {
@@ -137,56 +109,22 @@ const App: React.FC = () => {
     setActiveDragId(null);
 
     if (over && active.id !== over.id) {
-      setItineraryData((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        
-        const newOrder = arrayMove(items, oldIndex, newIndex);
-        // Recalculate dates after reordering
-        return recalculateDates(newOrder, tripSettings.startDate);
-      });
+      reorderDays(active.id as string, over.id as string);
     }
   };
 
-  // Add Day Handler
   const handleAddDay = () => {
-    const newDay: ItineraryDay = {
-      id: Math.random().toString(36).substr(2, 9),
-      day: "", // Will be calc
-      date: "", // Will be calc
-      weekday: "", // Will be calc
-      title: "新的一天",
-      desc: "自由安排行程",
-      pass: false,
-      bg: "https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1000",
-      location: "Japan",
-      weatherIcon: tripSettings.season === 'winter' ? 'snow' : 'sunny',
-      temp: "--°C",
-      events: []
-    };
-
-    const newData = [...itineraryData, newDay];
-    setItineraryData(recalculateDates(newData, tripSettings.startDate));
-    
-    // Scroll to bottom hint (optional)
+    addDay();
     setTimeout(() => {
        const listContainer = document.querySelector('.no-scrollbar');
        if (listContainer) listContainer.scrollTop = listContainer.scrollHeight;
     }, 100);
   };
 
-  // Delete Day Handler
   const handleDeleteDay = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent card click
-    if (itineraryData.length <= 1) {
-      alert("至少需要保留一天行程！");
-      return;
-    }
-    if (window.confirm("確定要刪除這一整天的行程嗎？刪除後無法復原。")) {
-      const newData = itineraryData.filter(d => d.id !== id);
-      setItineraryData(recalculateDates(newData, tripSettings.startDate));
-      if (selectedDayIndex !== null) setSelectedDayIndex(null); // Go home to avoid index error
-    }
+    if (window.confirm("確定要刪除這一整天的行程嗎？刪除後無法復原。")) deleteDay(id);
+    if (selectedDayIndex !== null) setSelectedDayIndex(null); // Go home to avoid index error
   };
 
   const handleReset = () => {
@@ -255,21 +193,10 @@ const App: React.FC = () => {
     }
   };
 
-  const handleDayUpdate = (updatedDay: ItineraryDay | ItineraryDay[]) => {
-    setItineraryData(prevData => {
-        const updates = Array.isArray(updatedDay) ? updatedDay : [updatedDay];
-        const updateMap = new Map<string, ItineraryDay>(
-            updates.map((d): [string, ItineraryDay] => [d.day, d])
-        );
-        return prevData.map(day => updateMap.get(day.day) || day);
-    });
-  };
-
   const toggleDarkMode = () => {
     setIsDarkMode(prev => !prev);
   };
 
-  const isHome = selectedDayIndex === null;
   const selectedDay = selectedDayIndex !== null ? itineraryData[selectedDayIndex] : null;
   const activeDragItem = activeDragId ? itineraryData.find(d => d.id === activeDragId) : null;
 
@@ -283,11 +210,16 @@ const App: React.FC = () => {
     }
   };
 
-  const getPassShortLabel = (passName?: string) => {
-    if (!passName) return 'JR PASS';
-    const count = itineraryData.filter(d => d.passName === passName).length;
-    return count > 1 ? `${count}日券` : '單日券';
-  };
+  // 優化：使用 useMemo 快取 Pass 的使用天數，避免在每次渲染時重複計算
+  const passUsageMap = useMemo(() => {
+    const usage = new Map<string, number>();
+    itineraryData.forEach(day => {
+      if (day.passName) {
+        usage.set(day.passName, (usage.get(day.passName) || 0) + 1);
+      }
+    });
+    return usage;
+  }, [itineraryData]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper dark:bg-slate-950 dark:text-slate-100 transition-colors duration-1000">
@@ -383,7 +315,7 @@ const App: React.FC = () => {
                       isHome={isHome}
                       onClick={() => handleDaySelect(index)}
                       onDelete={(e) => handleDeleteDay(e, item.id)}
-                      getPassShortLabel={getPassShortLabel}
+                      passUsageMap={passUsageMap}
                     />
                   ))}
                 </SortableContext>
@@ -420,7 +352,7 @@ const App: React.FC = () => {
                   day={activeDragItem}
                   isSelected={false}
                   isHome={isHome}
-                  getPassShortLabel={getPassShortLabel}
+                  passUsageMap={passUsageMap}
                   isOverlay
                 />
               ) : null}
@@ -458,7 +390,7 @@ const App: React.FC = () => {
             <DetailPanel 
               day={selectedDay} 
               allDays={itineraryData}
-              onUpdate={handleDayUpdate as any} 
+              onUpdate={updateDay} 
               onHome={handleHome}
               onNext={handleNext}
               onPrev={handlePrev}
