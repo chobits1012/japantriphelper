@@ -89,3 +89,4 @@ export const useItinerary = (tripSettings: TripSettings) => {
     recalculateDates, // Expose for use in other parts like TripSetup
   };
 };
+
