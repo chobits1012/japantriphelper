@@ -11,23 +11,17 @@ interface SortableDayCardProps {
   isHome: boolean;
   onClick: () => void;
   onDelete: (e: React.MouseEvent) => void;
-  getPassShortLabel: (passName?: string) => string;
 }
 
 export const SortableDayCard: React.FC<SortableDayCardProps> = ({ index, ...props }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: props.day.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.day.id,
+  });
 
   const style = {
-    transform: CSS.Translate.toString(transform), // Use Translate instead of Transform for smoother GPU rendering
+    transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1, // Dim the original item while dragging
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (

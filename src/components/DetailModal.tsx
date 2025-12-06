@@ -1,6 +1,27 @@
-
 import React, { useState, useEffect } from 'react';
-import { Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight, ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon, Search } from 'lucide-react';
+import {
+  Home,
+  Cloud,
+  Sun,
+  CloudRain,
+  Snowflake,
+  BedDouble,
+  Lightbulb,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Pencil,
+  Save,
+  X,
+  Plus,
+  Trash2,
+  Loader2,
+  Train,
+  CheckCircle2,
+  Eraser,
+  Map as MapIcon,
+  Search,
+} from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent } from '../types';
 import TimelineEvent from './TimelineEvent';
 import { REGIONS, REGIONAL_PASSES, PASS_COLORS } from '../constants';
@@ -19,20 +40,30 @@ interface DetailPanelProps {
 
 const getWeatherIcon = (icon?: string) => {
   switch (icon) {
-    case 'sunny': return <Sun className="text-orange-400" size={20} />;
-    case 'rain': return <CloudRain className="text-blue-400" size={20} />;
-    case 'snow': return <Snowflake className="text-sky-300" size={20} />;
-    default: return <Cloud className="text-gray-400" size={20} />;
+    case 'sunny':
+      return <Sun className="text-orange-400" size={20} />;
+    case 'rain':
+      return <CloudRain className="text-blue-400" size={20} />;
+    case 'snow':
+      return <Snowflake className="text-sky-300" size={20} />;
+    default:
+      return <Cloud className="text-gray-400" size={20} />;
   }
 };
 
 const getLiveWeatherIcon = (code: number, size = 16) => {
-  if (code === 0 || code === 1) return <Sun className="text-orange-500 animate-pulse" size={size} />; 
-  if (code === 2 || code === 3) return <Cloud className="text-gray-400" size={size} />; 
-  if (code >= 51 && code <= 67) return <CloudRain className="text-blue-500" size={size} />; 
-  if (code >= 71 && code <= 77) return <Snowflake className="text-sky-400 animate-bounce" size={size} />; 
-  if (code >= 80 && code <= 82) return <CloudRain className="text-blue-600" size={size} />; 
-  if (code >= 85 && code <= 86) return <Snowflake className="text-sky-500" size={size} />; 
+  if (code === 0 || code === 1)
+    return <Sun className="text-orange-500 animate-pulse" size={size} />;
+  if (code === 2 || code === 3)
+    return <Cloud className="text-gray-400" size={size} />;
+  if (code >= 51 && code <= 67)
+    return <CloudRain className="text-blue-500" size={size} />;
+  if (code >= 71 && code <= 77)
+    return <Snowflake className="text-sky-400 animate-bounce" size={size} />;
+  if (code >= 80 && code <= 82)
+    return <CloudRain className="text-blue-600" size={size} />;
+  if (code >= 85 && code <= 86)
+    return <Snowflake className="text-sky-500" size={size} />;
   return <Cloud className="text-gray-400" size={size} />;
 };
 
@@ -77,7 +108,7 @@ const getLocationQuery = (loc: string) => {
     '宇治': 'Uji',
     '關西機場': 'Izumisano',
     '成田機場': 'Narita',
-    '羽田機場': 'Ota'
+    '羽田機場': 'Ota',
   };
 
   for (const key in mapping) {
@@ -85,17 +116,27 @@ const getLocationQuery = (loc: string) => {
   }
 
   if (loc.includes(' ')) {
-     const parts = loc.split(' ');
-     return parts[parts.length - 1]; 
+    const parts = loc.split(' ');
+    return parts[parts.length - 1];
   }
 
   return loc;
 };
 
-const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHome, onNext, onPrev, hasPrev, hasNext, className }) => {
+const DetailPanel: React.FC<DetailPanelProps> = ({
+  day,
+  allDays,
+  onUpdate,
+  onHome,
+  onNext,
+  onPrev,
+  hasPrev,
+  hasNext,
+  className,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<ItineraryDay>(day);
-  
+
   // Transport Pass State
   const [selectedRegion, setSelectedRegion] = useState<string>(REGIONS[0]);
   const [selectedPass, setSelectedPass] = useState<string>('');
@@ -105,24 +146,25 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const isCustomPass = selectedPass === 'custom';
 
   // Live Weather State
-  const [liveWeather, setLiveWeather] = useState<{temp: number, code: number} | null>(null);
+  const [liveWeather, setLiveWeather] =
+    useState<{ temp: number; code: number } | null>(null);
   const [forecast, setForecast] = useState<any[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(false);
 
   useEffect(() => {
     setEditData(day);
     setIsEditing(false);
-    
+
     // Reset Pass UI
     setSelectedRegion(REGIONS[0]);
     setSelectedPass('');
     setCustomPassName('');
     setPassDuration(1);
     setPassColor(PASS_COLORS[0].value);
-    
+
     setLiveWeather(null);
     setForecast([]);
-    
+
     const fetchWeather = async () => {
       if (!day.location) return;
 
@@ -130,40 +172,45 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
 
       setLoadingWeather(true);
       try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryLocation)}&count=1&language=en&format=json`);
+        const geoRes = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+            queryLocation,
+          )}&count=1&language=en&format=json`,
+        );
         const geoData = await geoRes.json();
 
         if (!geoData.results || geoData.results.length === 0) {
-           console.warn("Location not found:", queryLocation);
-           return;
+          console.warn('Location not found:', queryLocation);
+          return;
         }
 
         const { latitude, longitude } = geoData.results[0];
 
         const weatherRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
         );
         const data = await weatherRes.json();
-        
+
         if (data.current) {
           setLiveWeather({
             temp: data.current.temperature_2m,
-            code: data.current.weather_code
+            code: data.current.weather_code,
           });
         }
 
         if (data.daily) {
-          const dailyData = data.daily.time.map((time: string, index: number) => ({
-            date: time.slice(5).replace('-', '/'),
-            code: data.daily.weather_code[index],
-            max: data.daily.temperature_2m_max[index],
-            min: data.daily.temperature_2m_min[index],
-          }));
+          const dailyData = data.daily.time.map(
+            (time: string, index: number) => ({
+              date: time.slice(5).replace('-', '/'),
+              code: data.daily.weather_code[index],
+              max: data.daily.temperature_2m_max[index],
+              min: data.daily.temperature_2m_min[index],
+            }),
+          );
           setForecast(dailyData);
         }
-
       } catch (e) {
-        console.error("Weather fetch failed", e);
+        console.error('Weather fetch failed', e);
       } finally {
         setLoadingWeather(false);
       }
@@ -173,7 +220,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   }, [day]);
 
   const handleSaveText = () => {
-    const sortedEvents = [...editData.events].sort((a, b) => a.time.localeCompare(b.time));
+    const sortedEvents = [...editData.events].sort((a, b) =>
+      a.time.localeCompare(b.time),
+    );
     const currentDayUpdate = { ...editData, events: sortedEvents };
     onUpdate(currentDayUpdate);
     setEditData(currentDayUpdate);
@@ -183,79 +232,89 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   const handleBatchApplyPass = () => {
     const finalPassName = isCustomPass ? customPassName : selectedPass;
     if (!finalPassName) {
-        alert("請選擇或輸入票券名稱");
-        return;
+      alert('請選擇或輸入票券名稱');
+      return;
     }
 
-    let updates: ItineraryDay[] = [];
+    const updates: ItineraryDay[] = [];
     const startIndex = allDays.findIndex(d => d.day === day.day);
 
     if (startIndex !== -1) {
-        for (let i = 0; i < passDuration; i++) {
-            if (startIndex + i < allDays.length) {
-                const targetDay = allDays[startIndex + i];
-                const isCurrentDay = i === 0;
-                const baseData = isCurrentDay ? editData : targetDay;
+      for (let i = 0; i < passDuration; i++) {
+        if (startIndex + i < allDays.length) {
+          const targetDay = allDays[startIndex + i];
+          const isCurrentDay = i === 0;
+          const baseData = isCurrentDay ? editData : targetDay;
 
-                updates.push({
-                    ...baseData,
-                    pass: true,
-                    passName: finalPassName,
-                    passColor: passColor
-                });
-            }
+          updates.push({
+            ...baseData,
+            pass: true,
+            passName: finalPassName,
+            passColor: passColor,
+            passDurationDays: passDuration, // ★ 記錄幾日券
+          });
         }
-        onUpdate(updates);
-        alert(`已成功將「${finalPassName}」套用到 ${updates.length} 天行程！`);
-        setIsEditing(false);
+      }
+      onUpdate(updates);
+      alert(`已成功將「${finalPassName}」套用到 ${updates.length} 天行程！`);
+      setIsEditing(false);
     }
   };
 
   const handleBatchRemovePass = () => {
-     if (!window.confirm(`確定要從今天開始，移除連續 ${passDuration} 天的交通票券設定嗎？`)) return;
+    if (
+      !window.confirm(
+        `確定要從今天開始，移除連續 ${passDuration} 天的交通票券設定嗎？`,
+      )
+    )
+      return;
 
-     let updates: ItineraryDay[] = [];
-     const startIndex = allDays.findIndex(d => d.day === day.day);
+    const updates: ItineraryDay[] = [];
+    const startIndex = allDays.findIndex(d => d.day === day.day);
 
-     if (startIndex !== -1) {
-        for (let i = 0; i < passDuration; i++) {
-            if (startIndex + i < allDays.length) {
-                const targetDay = allDays[startIndex + i];
-                const isCurrentDay = i === 0;
-                const baseData = isCurrentDay ? editData : targetDay;
+    if (startIndex !== -1) {
+      for (let i = 0; i < passDuration; i++) {
+        if (startIndex + i < allDays.length) {
+          const targetDay = allDays[startIndex + i];
+          const isCurrentDay = i === 0;
+          const baseData = isCurrentDay ? editData : targetDay;
 
-                updates.push({
-                    ...baseData,
-                    pass: false,
-                    passName: undefined,
-                    passColor: undefined
-                });
-            }
+          updates.push({
+            ...baseData,
+            pass: false,
+            passName: undefined,
+            passColor: undefined,
+            passDurationDays: undefined, // ★ 一併清掉
+          });
         }
-        onUpdate(updates);
-        setIsEditing(false);
-     }
+      }
+      onUpdate(updates);
+      setIsEditing(false);
+    }
   };
 
   const handleViewRoute = () => {
-    // Filter events that contain a valid mapQuery
     const validLocations = day.events
       .filter(e => e.mapQuery && e.mapQuery.trim() !== '')
       .map(e => e.mapQuery!);
 
     if (validLocations.length < 2) {
-      alert("今日行程地點不足兩個，無法規劃路線。");
+      alert('今日行程地點不足兩個，無法規劃路線。');
       return;
     }
 
     const origin = encodeURIComponent(validLocations[0]);
-    const destination = encodeURIComponent(validLocations[validLocations.length - 1]);
-    
+    const destination = encodeURIComponent(
+      validLocations[validLocations.length - 1],
+    );
+
     let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=transit`;
 
-    // Add waypoints if there are intermediate stops
     if (validLocations.length > 2) {
-      const waypoints = validLocations.slice(1, -1).map(loc => encodeURIComponent(loc)).join('|');
+      const waypoints = validLocations
+        .slice(1, -1)
+        .map(loc => encodeURIComponent(loc))
+        .join('|');
       url += `&waypoints=${waypoints}`;
     }
 
@@ -263,7 +322,6 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   };
 
   const handleJorudanSearch = () => {
-    // Open Traditional Chinese version of Jorudan
     window.open('https://world.jorudan.co.jp/mln/zh-tw/', '_blank');
   };
 
@@ -272,7 +330,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
     setIsEditing(false);
   };
 
-  const handleEventChange = (index: number, field: keyof ItineraryEvent, value: any) => {
+  const handleEventChange = (
+    index: number,
+    field: keyof ItineraryEvent,
+    value: any,
+  ) => {
     const newEvents = [...editData.events];
     newEvents[index] = { ...newEvents[index], [field]: value };
     setEditData({ ...editData, events: newEvents });
@@ -280,10 +342,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
 
   const handleAddEvent = () => {
     const newEvent: ItineraryEvent = {
-      time: "00:00",
-      title: "新行程",
-      desc: "行程描述",
-      category: 'sightseeing'
+      time: '00:00',
+      title: '新行程',
+      desc: '行程描述',
+      category: 'sightseeing',
     };
     setEditData({ ...editData, events: [...editData.events, newEvent] });
   };
@@ -294,7 +356,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   };
 
   const key = day.day;
-  const weatherUrl = `https://www.google.com/search?q=${encodeURIComponent(day.location + " 天氣")}`;
+  const weatherUrl = `https://www.google.com/search?q=${encodeURIComponent(
+    day.location + ' 天氣',
+  )}`;
 
   const hexToRgba = (hex: string, alpha: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -304,359 +368,425 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
   };
 
   return (
-    <div 
+    <div
       key={key}
       className={`h-full w-full flex flex-col bg-white dark:bg-slate-950 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 pt-[env(safe-area-inset-top)] transition-colors duration-1000 ${className || ''}`}
     >
       {!isEditing && (
         <>
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center opacity-25 grayscale-0 pointer-events-none z-0 transition-all duration-700 ease-in-out transform scale-105"
             style={{ backgroundImage: `url('${day.bg}')` }}
           />
-          {/* Dual Overlay for Smooth Cross-fade */}
-          <div className={`absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/70 pointer-events-none z-0 transition-opacity duration-1000`} />
-          <div className={`absolute inset-0 bg-gradient-to-b from-slate-950/95 via-slate-950/85 to-slate-950/70 pointer-events-none z-0 transition-opacity duration-1000 dark:opacity-100 opacity-0`} />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/70 pointer-events-none z-0 transition-opacity duration-1000" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/95 via-slate-950/85 to-slate-950/70 pointer-events-none z-0 transition-opacity duration-1000 dark:opacity-100 opacity-0" />
         </>
       )}
 
       {/* Floating Action Buttons */}
       <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-5 md:top-8 md:right-8 z-50 flex items-center gap-2 transition-all">
-          {isEditing ? (
-            <>
-               <button 
-                onClick={handleSaveText}
-                className="p-2 rounded-full bg-japan-blue text-white shadow-lg hover:bg-japan-blue/90 transition-transform hover:scale-105 dark:bg-sky-600 dark:hover:bg-sky-500"
-                title="儲存文字修改"
-              >
-                <Save size={20} />
-              </button>
-              <button 
-                onClick={handleCancel}
-                className="p-2 rounded-full bg-white text-gray-500 hover:bg-gray-100 shadow-lg transition-transform hover:scale-105 border border-gray-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
-                title="取消"
-              >
-                <X size={20} />
-              </button>
-            </>
-          ) : (
-            <button 
-              onClick={() => setIsEditing(true)}
-              className="p-2 rounded-full bg-white text-gray-400 hover:text-japan-blue hover:bg-gray-50 shadow-lg transition-transform hover:scale-105 border border-gray-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:text-sky-400 dark:hover:bg-slate-700"
-              title="編輯行程"
+        {isEditing ? (
+          <>
+            <button
+              onClick={handleSaveText}
+              className="p-2 rounded-full bg-japan-blue text-white shadow-lg hover:bg-japan-blue/90 transition-transform hover:scale-105 dark:bg-sky-600 dark:hover:bg-sky-500"
+              title="儲存文字修改"
             >
-              <Pencil size={20} />
+              <Save size={20} />
             </button>
-          )}
-          
-          <button 
-            onClick={onHome}
-            className="p-2 rounded-full bg-white text-japan-blue hover:bg-gray-50 shadow-lg transition-transform hover:scale-105 border border-gray-100 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400 dark:hover:bg-slate-700"
-            title="回到首頁"
+            <button
+              onClick={handleCancel}
+              className="p-2 rounded-full bg-white text-gray-500 hover:bg-gray-100 shadow-lg transition-transform hover:scale-105 border border-gray-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+              title="取消"
+            >
+              <X size={20} />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="p-2 rounded-full bg-white text-gray-400 hover:text-japan-blue hover:bg-gray-50 shadow-lg transition-transform hover:scale-105 border border-gray-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:text-sky-400 dark:hover:bg-slate-700"
+            title="編輯行程"
           >
-            <Home size={20} />
+            <Pencil size={20} />
           </button>
+        )}
+
+        <button
+          onClick={onHome}
+          className="p-2 rounded-full bg-white text-japan-blue hover:bg-gray-50 shadow-lg transition-transform hover:scale-105 border border-gray-100 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400 dark:hover:bg-slate-700"
+          title="回到首頁"
+        >
+          <Home size={20} />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto relative z-10 px-6 py-8 md:px-12 md:py-10 no-scrollbar pb-32 safe-area-bottom">
-        
         {/* Navigation Bar Info */}
         <div className="mb-8 pt-4">
-             <div className="flex items-center gap-4">
-              <span className="text-4xl font-serif font-bold text-japan-blue/20 dark:text-sky-400/20 select-none">
-                {day.day}
-              </span>
-              <div className="h-8 w-px bg-japan-blue/20 dark:bg-slate-700"></div>
-              
-              <div className="flex flex-col w-full">
-                <span className="text-xs font-bold tracking-widest text-japan-blue dark:text-sky-400 uppercase">
-                  {day.date} • {day.weekday}
-                </span>
-                
-                {day.temp && !isEditing && (
-                   <div className="flex flex-col gap-2 mt-1 w-full">
-                      <a 
-                        href={weatherUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="group flex items-center gap-3 text-sm font-medium text-gray-500 dark:text-slate-400 cursor-pointer transition-transform active:scale-95 origin-left"
-                      >
-                          <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                             {getWeatherIcon(day.weatherIcon)}
-                             <span>{day.temp}</span>
-                          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-4xl font-serif font-bold text-japan-blue/20 dark:text-sky-400/20 select-none">
+              {day.day}
+            </span>
+            <div className="h-8 w-px bg-japan-blue/20 dark:bg-slate-700"></div>
 
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-full shadow-sm border border-gray-200/60 dark:border-slate-700/60 text-ink dark:text-slate-200 group-hover:border-japan-blue/50 group-hover:text-japan-blue transition-colors">
-                            {loadingWeather ? (
-                              <Loader2 size={12} className="animate-spin text-japan-blue dark:text-sky-400" />
-                            ) : liveWeather ? (
-                              <>
-                                {getLiveWeatherIcon(liveWeather.code)}
-                                <span className="text-xs font-bold font-mono">
-                                  Live: {liveWeather.temp}°
-                                </span>
-                              </>
-                            ) : (
-                              <div className="flex items-center gap-1 text-xs text-gray-400">
-                                 <ExternalLink size={10} />
-                                 <span>{day.location}</span>
-                              </div>
-                            )}
-                          </div>
-                      </a>
-                      {forecast.length > 0 && (
-                        <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mask-linear-fade pr-12">
-                           {forecast.map((f, i) => (
-                             <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center bg-white/40 dark:bg-slate-800/40 p-1.5 rounded-lg border border-white/60 dark:border-slate-700 min-w-[50px]">
-                                <span className="text-[10px] text-gray-500 dark:text-slate-400 font-mono">{f.date}</span>
-                                <div className="my-1">{getLiveWeatherIcon(f.code, 14)}</div>
-                                <span className="text-[10px] font-bold text-gray-600 dark:text-slate-300">{Math.round(f.max)}°</span>
-                             </div>
-                           ))}
+            <div className="flex flex-col w-full">
+              <span className="text-xs font-bold tracking-widest text-japan-blue dark:text-sky-400 uppercase">
+                {day.date} • {day.weekday}
+              </span>
+
+              {day.temp && !isEditing && (
+                <div className="flex flex-col gap-2 mt-1 w-full">
+                  <a
+                    href={weatherUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex items-center gap-3 text-sm font-medium text-gray-500 dark:text-slate-400 cursor-pointer transition-transform active:scale-95 origin-left"
+                  >
+                    <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                      {getWeatherIcon(day.weatherIcon)}
+                      <span>{day.temp}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-full shadow-sm border border-gray-200/60 dark:border-slate-700/60 text-ink dark:text-slate-200 group-hover:border-japan-blue/50 group-hover:text-japan-blue transition-colors">
+                      {loadingWeather ? (
+                        <Loader2
+                          size={12}
+                          className="animate-spin text-japan-blue dark:text-sky-400"
+                        />
+                      ) : liveWeather ? (
+                        <>
+                          {getLiveWeatherIcon(liveWeather.code)}
+                          <span className="text-xs font-bold font-mono">
+                            Live: {liveWeather.temp}°
+                          </span>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <ExternalLink size={10} />
+                          <span>{day.location}</span>
                         </div>
                       )}
-                   </div>
-                )}
-              </div>
+                    </div>
+                  </a>
+                  {forecast.length > 0 && (
+                    <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mask-linear-fade pr-12">
+                      {forecast.map((f, i) => (
+                        <div
+                          key={i}
+                          className="flex-shrink-0 flex flex-col items-center justify-center bg-white/40 dark:bg-slate-800/40 p-1.5 rounded-lg border border-white/60 dark:border-slate-700 min-w-[50px]"
+                        >
+                          <span className="text-[10px] text-gray-500 dark:text-slate-400 font-mono">
+                            {f.date}
+                          </span>
+                          <div className="my-1">
+                            {getLiveWeatherIcon(f.code, 14)}
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-600 dark:text-slate-300">
+                            {Math.round(f.max)}°
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+          </div>
         </div>
-          
+
         {/* EDIT MODE CONTENT */}
         {isEditing ? (
           <div className="space-y-8 animate-in fade-in duration-300">
-            
             {/* --- TRANSPORT PASS SETTING (Batch Tools) --- */}
             <div className="bg-red-50 border border-red-100 p-4 rounded-xl space-y-3 dark:bg-red-900/10 dark:border-red-900/30">
-               <div className="flex items-center justify-between text-japan-red dark:text-red-400">
-                  <div className="flex items-center gap-2">
-                    <Train size={18} />
-                    <span className="text-xs font-bold uppercase tracking-wider">交通周遊券 (批次管理)</span>
-                  </div>
-                  {day.pass && (
-                    <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold dark:bg-red-900/30 dark:text-red-300">
-                       目前: {day.passName}
-                    </span>
+              <div className="flex items-center justify-between text-japan-red dark:text-red-400">
+                <div className="flex items-center gap-2">
+                  <Train size={18} />
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    交通周遊券 (批次管理)
+                  </span>
+                </div>
+                {day.pass && (
+                  <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold dark:bg-red-900/30 dark:text-red-300">
+                    目前: {day.passName}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {/* Selects */}
+                <div className="flex flex-col gap-3">
+                  <select
+                    value={selectedRegion}
+                    onChange={e => {
+                      setSelectedRegion(e.target.value);
+                      setSelectedPass('');
+                      setCustomPassName('');
+                    }}
+                    className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600 shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                  >
+                    {REGIONS.map(r => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selectedPass}
+                    onChange={e => {
+                      setSelectedPass(e.target.value);
+                      if (e.target.value !== 'custom') {
+                        setCustomPassName('');
+                      }
+                    }}
+                    className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                  >
+                    <option value="">選擇票券...</option>
+                    {REGIONAL_PASSES[selectedRegion]?.map(pass => (
+                      <option key={pass} value={pass}>
+                        {pass}
+                      </option>
+                    ))}
+                    <option value="custom">✏️ 自行新增...</option>
+                  </select>
+                </div>
+
+                {/* Custom Name & Duration */}
+                <div className="flex gap-2 items-center">
+                  {isCustomPass ? (
+                    <input
+                      type="text"
+                      value={customPassName}
+                      onChange={e => setCustomPassName(e.target.value)}
+                      placeholder="輸入票券名稱..."
+                      className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="flex-1"></div>
                   )}
-               </div>
-               
-               <div className="flex flex-col gap-3">
-                  {/* Selects */}
-                  <div className="flex flex-col gap-3">
-                      <select 
-                        value={selectedRegion}
-                        onChange={(e) => {
-                          setSelectedRegion(e.target.value);
-                          setSelectedPass('');
-                          setCustomPassName('');
-                        }}
-                        className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600 shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
-                      >
-                         {REGIONS.map(r => (
-                           <option key={r} value={r}>{r}</option>
-                         ))}
-                      </select>
 
-                      <select 
-                        value={selectedPass}
-                        onChange={(e) => {
-                          setSelectedPass(e.target.value);
-                          if (e.target.value !== 'custom') {
-                            setCustomPassName('');
-                          }
-                        }}
-                        className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
-                      >
-                         <option value="">選擇票券...</option>
-                         {REGIONAL_PASSES[selectedRegion]?.map(pass => (
-                           <option key={pass} value={pass}>{pass}</option>
-                         ))}
-                         <option value="custom">✏️ 自行新增...</option>
-                      </select>
-                  </div>
-                  
-                  {/* Custom Name & Duration */}
-                  <div className="flex gap-2 items-center">
-                      {isCustomPass ? (
-                        <input 
-                           type="text" 
-                           value={customPassName}
-                           onChange={(e) => setCustomPassName(e.target.value)}
-                           placeholder="輸入票券名稱..."
-                           className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
-                           autoFocus
-                        />
-                      ) : (
-                        <div className="flex-1"></div>
-                      )}
+                  <span className="text-xs font-bold text-gray-400 dark:text-slate-500">
+                    範圍:
+                  </span>
+                  <select
+                    value={passDuration}
+                    onChange={e => setPassDuration(parseInt(e.target.value))}
+                    className="w-24 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 10, 14, 21].map(d => (
+                      <option key={d} value={d}>
+                        {d} 天
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                      <span className="text-xs font-bold text-gray-400 dark:text-slate-500">範圍:</span>
-                      <select
-                        value={passDuration}
-                        onChange={(e) => setPassDuration(parseInt(e.target.value))}
-                        className="w-24 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
-                      >
-                         {[1,2,3,4,5,6,7,10,14,21].map(d => (
-                           <option key={d} value={d}>{d} 天</option>
-                         ))}
-                      </select>
+                {/* Color Selector */}
+                <div className="flex items-center gap-3 py-2 border-t border-red-100/50 dark:border-red-900/20">
+                  <span className="text-xs font-bold text-gray-400 dark:text-slate-500">
+                    標籤顏色:
+                  </span>
+                  <div className="flex gap-2">
+                    {PASS_COLORS.map(c => (
+                      <button
+                        key={c.value}
+                        onClick={() => setPassColor(c.value)}
+                        className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
+                          passColor === c.value
+                            ? 'border-gray-400 scale-110 shadow-sm'
+                            : 'border-transparent opacity-80 hover:opacity-100'
+                        }`}
+                        style={{ backgroundColor: c.value }}
+                        title={c.name}
+                      />
+                    ))}
                   </div>
+                </div>
 
-                  {/* NEW: Color Selector */}
-                  <div className="flex items-center gap-3 py-2 border-t border-red-100/50 dark:border-red-900/20">
-                     <span className="text-xs font-bold text-gray-400 dark:text-slate-500">標籤顏色:</span>
-                     <div className="flex gap-2">
-                        {PASS_COLORS.map((c) => (
-                           <button
-                             key={c.value}
-                             onClick={() => setPassColor(c.value)}
-                             className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${passColor === c.value ? 'border-gray-400 scale-110 shadow-sm' : 'border-transparent opacity-80 hover:opacity-100'}`}
-                             style={{ backgroundColor: c.value }}
-                             title={c.name}
-                           />
-                        ))}
-                     </div>
-                  </div>
-
-                  {/* Batch Action Buttons */}
-                  <div className="flex gap-2 pt-1 border-t border-red-100 mt-1 dark:border-red-900/20">
-                     <button 
-                       onClick={handleBatchApplyPass}
-                       disabled={(!selectedPass && !customPassName)}
-                       className="flex-1 bg-japan-red text-white py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 dark:disabled:bg-slate-700"
-                     >
-                       <CheckCircle2 size={16} />
-                       立即套用 ({passDuration}天)
-                     </button>
-                     <button 
-                       onClick={handleBatchRemovePass}
-                       className="flex-1 bg-white text-gray-500 border border-gray-200 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
-                     >
-                       <Eraser size={16} />
-                       移除 ({passDuration}天)
-                     </button>
-                  </div>
-               </div>
+                {/* Batch Action Buttons */}
+                <div className="flex gap-2 pt-1 border-t border-red-100 mt-1 dark:border-red-900/20">
+                  <button
+                    onClick={handleBatchApplyPass}
+                    disabled={!selectedPass && !customPassName}
+                    className="flex-1 bg-japan-red text-white py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 dark:disabled:bg-slate-700"
+                  >
+                    <CheckCircle2 size={16} />
+                    立即套用 ({passDuration}天)
+                  </button>
+                  <button
+                    onClick={handleBatchRemovePass}
+                    className="flex-1 bg-white text-gray-500 border border-gray-200 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    <Eraser size={16} />
+                    移除 ({passDuration}天)
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Header Edit */}
             <div className="space-y-4 border-b border-gray-100 pb-6 dark:border-slate-800">
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <label className="text-xs font-bold text-gray-400 uppercase">標題</label>
-                   <input 
-                      type="text" 
-                      value={editData.title}
-                      onChange={(e) => setEditData({...editData, title: e.target.value})}
-                      className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500"
-                   />
-                 </div>
-                 <div>
-                   <label className="text-xs font-bold text-gray-400 uppercase">地點 (影響天氣)</label>
-                   <input 
-                      type="text" 
-                      value={editData.location}
-                      onChange={(e) => setEditData({...editData, location: e.target.value})}
-                      className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500"
-                      placeholder="例如: 東京"
-                   />
-                 </div>
-               </div>
-               <div>
-                 <label className="text-xs font-bold text-gray-400 uppercase">描述</label>
-                 <textarea 
-                    value={editData.desc}
-                    onChange={(e) => setEditData({...editData, desc: e.target.value})}
-                    className="w-full p-3 bg-gray-50 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-japan-blue/20 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-sky-500/20"
-                    rows={2}
-                 />
-               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    標題
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.title}
+                    onChange={e =>
+                      setEditData({ ...editData, title: e.target.value })
+                    }
+                    className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    地點 (影響天氣)
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.location}
+                    onChange={e =>
+                      setEditData({ ...editData, location: e.target.value })
+                    }
+                    className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500"
+                    placeholder="例如: 東京"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  描述
+                </label>
+                <textarea
+                  value={editData.desc}
+                  onChange={e =>
+                    setEditData({ ...editData, desc: e.target.value })
+                  }
+                  className="w-full p-3 bg-gray-50 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-japan-blue/20 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-sky-500/20"
+                  rows={2}
+                />
+              </div>
             </div>
 
             {/* Events Edit */}
             <div className="space-y-4">
-               <label className="text-xs font-bold text-gray-400 uppercase flex items-center justify-between">
-                  行程列表
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 font-normal">* 儲存後將自動按時間排序</span>
-                    <button onClick={handleAddEvent} className="text-japan-blue hover:underline flex items-center gap-1 dark:text-sky-400">
-                      <Plus size={14} /> 新增
-                    </button>
-                  </div>
-               </label>
-               
-               {editData.events.map((event, index) => (
-                 <div key={index} className="flex gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 relative group dark:bg-slate-800/50 dark:border-slate-700">
-                    <button 
-                      onClick={() => handleRemoveEvent(index)}
-                      className="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1 dark:hover:text-red-400"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                    
-                    <div className="space-y-3 flex-1">
-                       <div className="flex gap-2">
-                          <input 
-                            type="text" 
-                            value={event.time}
-                            onChange={(e) => handleEventChange(index, 'time', e.target.value)}
-                            className="w-20 p-2 text-sm font-bold border rounded bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
-                            placeholder="時間"
-                          />
-                          <select 
-                             value={event.category || 'sightseeing'}
-                             onChange={(e) => handleEventChange(index, 'category', e.target.value)}
-                             className="p-2 text-sm border rounded bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
-                          >
-                             <option value="sightseeing">景點</option>
-                             <option value="food">美食</option>
-                             <option value="shopping">購物</option>
-                             <option value="transport">交通</option>
-                             <option value="hotel">住宿</option>
-                             <option value="flight">航班</option>
-                             <option value="activity">體驗</option>
-                          </select>
-                       </div>
-                       <input 
-                          type="text" 
-                          value={event.title}
-                          onChange={(e) => handleEventChange(index, 'title', e.target.value)}
-                          className="w-full p-2 font-bold border rounded bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
-                          placeholder="行程標題"
-                       />
-                       <textarea 
-                          value={event.desc}
-                          onChange={(e) => handleEventChange(index, 'desc', e.target.value)}
-                          className="w-full p-2 text-sm border rounded h-20 resize-none bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
-                          placeholder="詳細內容"
-                       />
+              <label className="text-xs font-bold text-gray-400 uppercase flex items-center justify-between">
+                行程列表
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400 font-normal">
+                    * 儲存後將自動按時間排序
+                  </span>
+                  <button
+                    onClick={handleAddEvent}
+                    className="text-japan-blue hover:underline flex items-center gap-1 dark:text-sky-400"
+                  >
+                    <Plus size={14} /> 新增
+                  </button>
+                </div>
+              </label>
+
+              {editData.events.map((event, index) => (
+                <div
+                  key={index}
+                  className="flex gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 relative group dark:bg-slate-800/50 dark:border-slate-700"
+                >
+                  <button
+                    onClick={() => handleRemoveEvent(index)}
+                    className="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1 dark:hover:text-red-400"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+
+                  <div className="space-y-3 flex-1">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={event.time}
+                        onChange={e =>
+                          handleEventChange(index, 'time', e.target.value)
+                        }
+                        className="w-20 p-2 text-sm font-bold border rounded bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                        placeholder="時間"
+                      />
+                      <select
+                        value={event.category || 'sightseeing'}
+                        onChange={e =>
+                          handleEventChange(index, 'category', e.target.value)
+                        }
+                        className="p-2 text-sm border rounded bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                      >
+                        <option value="sightseeing">景點</option>
+                        <option value="food">美食</option>
+                        <option value="shopping">購物</option>
+                        <option value="transport">交通</option>
+                        <option value="hotel">住宿</option>
+                        <option value="flight">航班</option>
+                        <option value="activity">體驗</option>
+                      </select>
                     </div>
-                 </div>
-               ))}
+                    <input
+                      type="text"
+                      value={event.title}
+                      onChange={e =>
+                        handleEventChange(index, 'title', e.target.value)
+                      }
+                      className="w-full p-2 font-bold border rounded bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                      placeholder="行程標題"
+                    />
+                    <textarea
+                      value={event.desc}
+                      onChange={e =>
+                        handleEventChange(index, 'desc', e.target.value)
+                      }
+                      className="w-full p-2 text-sm border rounded h-20 resize-none bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                      placeholder="詳細內容"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Footer Edit */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-slate-800">
-               <div className="space-y-2">
-                  <label className="text-xs font-bold text-indigo-400 uppercase">住宿資訊</label>
-                  <input 
-                     type="text"
-                     value={editData.accommodation?.name || ''}
-                     onChange={(e) => setEditData({...editData, accommodation: { ...editData.accommodation, name: e.target.value }})}
-                     className="w-full p-2 border rounded text-sm bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
-                     placeholder="飯店名稱"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-xs font-bold text-amber-400 uppercase">小撇步</label>
-                  <textarea 
-                     value={editData.tips || ''}
-                     onChange={(e) => setEditData({...editData, tips: e.target.value})}
-                     className="w-full p-2 border rounded text-sm h-20 resize-none bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
-                     placeholder="旅遊小提醒"
-                  />
-               </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-indigo-400 uppercase">
+                  住宿資訊
+                </label>
+                <input
+                  type="text"
+                  value={editData.accommodation?.name || ''}
+                  onChange={e =>
+                    setEditData({
+                      ...editData,
+                      accommodation: {
+                        ...editData.accommodation,
+                        name: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full p-2 border rounded text-sm bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                  placeholder="飯店名稱"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-amber-400 uppercase">
+                  小撇步
+                </label>
+                <textarea
+                  value={editData.tips || ''}
+                  onChange={e =>
+                    setEditData({ ...editData, tips: e.target.value })
+                  }
+                  className="w-full p-2 border rounded text-sm h-20 resize-none bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                  placeholder="旅遊小提醒"
+                />
+              </div>
             </div>
-
           </div>
         ) : (
           /* VIEW MODE CONTENT */
@@ -670,53 +800,60 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
               </p>
             </div>
 
-            {/* Unified Info Bar: Transport Pass + View Route + Jorudan */}
             {(day.pass || day.events.length > 0) && (
               <div className="max-w-3xl mx-auto mb-10 pl-2 md:pl-4 flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
-                 
-                 {/* Transport Pass Badge */}
-                 {day.pass && (
-                   <div 
-                     className="inline-flex items-center gap-2 pr-3 pl-1.5 py-1.5 rounded-lg border shadow-sm dark:border-white/10"
-                     style={{ 
-                       backgroundColor: hexToRgba(day.passColor || '#c93a40', 0.05),
-                       borderColor: hexToRgba(day.passColor || '#c93a40', 0.2)
-                     }}
-                   >
-                      <div 
-                        className="text-white p-1 rounded"
-                        style={{ backgroundColor: day.passColor || '#c93a40' }}
-                      >
-                         <Train size={12} />
-                      </div>
-                      <span 
-                        className="font-bold text-xs"
-                        style={{ color: day.passColor || '#c93a40' }}
-                      >
-                        {day.passName || 'JR PASS'}
-                      </span>
-                   </div>
-                 )}
-
-                 {/* Compact View Route Button */}
-                 {day.events.filter(e => e.mapQuery).length >= 2 && (
-                    <button
-                      onClick={handleViewRoute}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:text-japan-blue hover:border-japan-blue/30 transition-all shadow-sm group dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-sky-400 dark:hover:border-sky-500/30"
+                {day.pass && (
+                  <div
+                    className="inline-flex items-center gap-2 pr-3 pl-1.5 py-1.5 rounded-lg border shadow-sm dark:border-white/10"
+                    style={{
+                      backgroundColor: hexToRgba(
+                        day.passColor || '#c93a40',
+                        0.05,
+                      ),
+                      borderColor: hexToRgba(
+                        day.passColor || '#c93a40',
+                        0.2,
+                      ),
+                    }}
+                  >
+                    <div
+                      className="text-white p-1 rounded"
+                      style={{ backgroundColor: day.passColor || '#c93a40' }}
                     >
-                      <MapIcon size={14} className="group-hover:scale-110 transition-transform text-japan-blue dark:text-sky-400" />
-                      <span>查看路線</span>
-                    </button>
-                 )}
+                      <Train size={12} />
+                    </div>
+                    <span
+                      className="font-bold text-xs"
+                      style={{ color: day.passColor || '#c93a40' }}
+                    >
+                      {day.passName || 'JR PASS'}
+                    </span>
+                  </div>
+                )}
 
-                 {/* Jorudan Search Button */}
-                 <button
-                    onClick={handleJorudanSearch}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:text-green-600 hover:border-green-200 transition-all shadow-sm group dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-green-400 dark:hover:border-green-500/30"
-                 >
-                    <Search size={14} className="group-hover:scale-110 transition-transform text-green-500 dark:text-green-400" />
-                    <span>乘換案內</span>
-                 </button>
+                {day.events.filter(e => e.mapQuery).length >= 2 && (
+                  <button
+                    onClick={handleViewRoute}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:text-japan-blue hover:border-japan-blue/30 transition-all shadow-sm group dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-sky-400 dark:hover:border-sky-500/30"
+                  >
+                    <MapIcon
+                      size={14}
+                      className="group-hover:scale-110 transition-transform text-japan-blue dark:text-sky-400"
+                    />
+                    <span>查看路線</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={handleJorudanSearch}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:text-green-600 hover:border-green-200 transition-all shadow-sm group dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-green-400 dark:hover:border-green-500/30"
+                >
+                  <Search
+                    size={14}
+                    className="group-hover:scale-110 transition-transform text-green-500 dark:text-green-400"
+                  />
+                  <span>乘換案內</span>
+                </button>
               </div>
             )}
 
@@ -731,26 +868,38 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
             <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
               {day.accommodation && (
                 <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-indigo-100 shadow-sm flex items-start gap-3 dark:bg-slate-800/80 dark:border-indigo-900/30">
-                    <div className="p-2 bg-indigo-50 text-indigo-500 rounded-lg dark:bg-indigo-900/30 dark:text-indigo-400">
-                      <BedDouble size={20} />
-                    </div>
-                    <div>
-                      <h5 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Accommodation</h5>
-                      <p className="font-bold text-ink text-sm dark:text-slate-200">{day.accommodation.name}</p>
-                      {day.accommodation.checkIn && <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">Check-in after {day.accommodation.checkIn}</p>}
-                    </div>
+                  <div className="p-2 bg-indigo-50 text-indigo-500 rounded-lg dark:bg-indigo-900/30 dark:text-indigo-400">
+                    <BedDouble size={20} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
+                      Accommodation
+                    </h5>
+                    <p className="font-bold text-ink text-sm dark:text-slate-200">
+                      {day.accommodation.name}
+                    </p>
+                    {day.accommodation.checkIn && (
+                      <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">
+                        Check-in after {day.accommodation.checkIn}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
               {day.tips && (
                 <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-amber-100 shadow-sm flex items-start gap-3 dark:bg-slate-800/80 dark:border-amber-900/30">
-                    <div className="p-2 bg-amber-50 text-amber-500 rounded-lg dark:bg-amber-900/30 dark:text-amber-400">
-                      <Lightbulb size={20} />
-                    </div>
-                    <div>
-                      <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Travel Tip</h5>
-                      <p className="text-sm text-gray-700 leading-relaxed dark:text-slate-300">{day.tips}</p>
-                    </div>
+                  <div className="p-2 bg-amber-50 text-amber-500 rounded-lg dark:bg-amber-900/30 dark:text-amber-400">
+                    <Lightbulb size={20} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
+                      Travel Tip
+                    </h5>
+                    <p className="text-sm text-gray-700 leading-relaxed dark:text-slate-300">
+                      {day.tips}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -760,14 +909,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
 
       {/* Floating Navigation Footer */}
       <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-6 py-4 pb-8 z-20 flex justify-between items-center safe-area-bottom dark:bg-slate-900/90 dark:border-slate-800">
-        <button 
+        <button
           onClick={onPrev}
           disabled={!hasPrev || isEditing}
           className={`
             flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-lg transition-all
-            ${hasPrev && !isEditing
-              ? 'text-japan-blue hover:bg-japan-blue/5 dark:text-sky-400 dark:hover:bg-slate-800' 
-              : 'text-gray-300 cursor-not-allowed dark:text-slate-700'}
+            ${
+              hasPrev && !isEditing
+                ? 'text-japan-blue hover:bg-japan-blue/5 dark:text-sky-400 dark:hover:bg-slate-800'
+                : 'text-gray-300 cursor-not-allowed dark:text-slate-700'
+            }
           `}
         >
           <ChevronLeft size={16} />
@@ -775,17 +926,19 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
         </button>
 
         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap dark:text-slate-500">
-           {day.day}
+          {day.day}
         </span>
 
-        <button 
+        <button
           onClick={onNext}
           disabled={!hasNext || isEditing}
           className={`
             flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-lg transition-all
-            ${hasNext && !isEditing
-              ? 'text-japan-blue hover:bg-japan-blue/5 dark:text-sky-400 dark:hover:bg-slate-800' 
-              : 'text-gray-300 cursor-not-allowed dark:text-slate-700'}
+            ${
+              hasNext && !isEditing
+                ? 'text-japan-blue hover:bg-japan-blue/5 dark:text-sky-400 dark:hover:bg-slate-800'
+                : 'text-gray-300 cursor-not-allowed dark:text-slate-700'
+            }
           `}
         >
           <span className="hidden md:inline">下一天</span>

@@ -85,13 +85,14 @@ const App: React.FC = () => {
   );
 
   // Dark Mode Effect
-  useEffect(() => {
+    useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  });
+  }, [isDarkMode]);
+
 
   // Drag Handlers
   const handleDragStart = (event: DragStartEvent) => {

@@ -1,4 +1,3 @@
-
 export type EventCategory = 'sightseeing' | 'food' | 'transport' | 'shopping' | 'activity' | 'flight' | 'hotel';
 export type TripSeason = 'spring' | 'summer' | 'autumn' | 'winter';
 
@@ -25,7 +24,7 @@ export interface Accommodation {
 }
 
 export interface ItineraryDay {
-  id: string; // New: Unique ID for drag-and-drop
+  id: string; // Unique ID for drag-and-drop
   day: string;
   date: string;
   weekday: string;
@@ -42,8 +41,11 @@ export interface ItineraryDay {
   tips?: string;
   accommodation?: Accommodation;
   events: ItineraryEvent[];
+
+  // Transport pass info
   passName?: string;
-  passColor?: string; // Hex color code for the pass badge
+  passColor?: string;         // Hex color code for the pass badge
+  passDurationDays?: number;  // 幾日券，例如 1,2,3,5...
 }
 
 // New Types for Travel Toolbox
