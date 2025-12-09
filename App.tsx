@@ -170,8 +170,19 @@ const App: React.FC = () => {
             </button>
         </div>
         
-        <div className="mt-16 text-center text-white/40 text-xs font-mono tracking-widest">
-           TRAVEL ASSISTANT v2.1
+       <div className="mt-16 text-center text-white/40 text-xs font-mono tracking-widest space-y-2">
+           <p>TRAVEL ASSISTANT v2.1</p>
+           <div className="flex flex-col items-center gap-1">
+             <p className="text-white/60 font-bold">James Wang</p>
+             <a 
+               href="https://www.threads.net/@jameswangwangwang" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               className="text-white/40 hover:text-white transition-colors border-b border-transparent hover:border-white/40"
+             >
+               threads: jameswangwangwang
+             </a>
+           </div>
         </div>
       </div>
     </div>
