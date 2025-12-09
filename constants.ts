@@ -1,8 +1,9 @@
+// constants.ts
 import type { ItineraryDay } from './types';
 
 export const WASHI_PATTERN = `data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d0d0d0' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E`;
 
-// Kyoto Winter Snow Scene
+// Kyoto Winter Snow Scene (Kiyomizu-dera in winter)
 export const HERO_IMAGE = "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop";
 
 export const REGIONS = [
@@ -81,7 +82,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       title: "抵達京都",
       desc: "桃園機場 ➔ 關西機場 ➔ 京都",
       pass: false,
-      bg: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?q=80&w=2070&auto=format&fit=crop", // Kyoto Tower/Station
+      bg: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?q=80&w=2070&auto=format&fit=crop", // Kyoto Street / Tower
       weatherIcon: 'cloudy',
       temp: "4°C / 9°C",
       location: "京都",
@@ -100,7 +101,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       title: "京都散策",
       desc: "伏見稻荷、清水寺、市區漫遊",
       pass: false,
-      bg: "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=2070&auto=format&fit=crop", // Fushimi Inari
+      bg: "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=2070&auto=format&fit=crop", // Fushimi Inari Torii
       weatherIcon: 'sunny',
       temp: "1°C / 7°C",
       location: "京都",
@@ -119,7 +120,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       desc: "海上鳥居、藤森照信建築",
       pass: true,
       passName: "JR 關西廣域鐵路周遊券",
-      bg: "https://images.unsplash.com/photo-1634626131456-559d32d667d4?q=80&w=2070&auto=format&fit=crop", // Lake Biwa / Shirahige
+      bg: "https://images.unsplash.com/photo-1634626131456-559d32d667d4?q=80&w=2070&auto=format&fit=crop", // Shirahige Shrine Torii
       weatherIcon: 'cloudy',
       temp: "0°C / 5°C",
       location: "滋賀 高島",
@@ -140,7 +141,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       desc: "神隱少女海上列車、伊根舟屋",
       pass: true,
       passName: "JR 關西廣域鐵路周遊券",
-      bg: "https://images.unsplash.com/photo-1624256673896-189f7db80026?q=80&w=2038&auto=format&fit=crop", // Ine Funaya / Sea of Kyoto
+      bg: "https://images.unsplash.com/photo-1624256673896-189f7db80026?q=80&w=2038&auto=format&fit=crop", // Ine Funaya
       weatherIcon: 'rain',
       temp: "2°C / 6°C",
       location: "京都 伊根",
@@ -161,7 +162,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       desc: "天橋立絕景、城崎溫泉巡禮",
       pass: true,
       passName: "JR 關西廣域鐵路周遊券",
-      bg: "https://images.unsplash.com/photo-1518974868060-d298150c9533?q=80&w=2070&auto=format&fit=crop", // Winter Onsen vibe
+      bg: "https://images.unsplash.com/photo-1605007357609-b472064df196?q=80&w=2070&auto=format&fit=crop", // Kinosaki Onsen (Updated)
       weatherIcon: 'snow',
       temp: "-1°C / 4°C",
       location: "兵庫 城崎溫泉",
@@ -182,7 +183,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       desc: "長途移動、岡山之夜",
       pass: true,
       passName: "JR 關西廣域鐵路周遊券",
-      bg: "https://images.unsplash.com/photo-1572935246213-39d677df98b8?q=80&w=2070&auto=format&fit=crop", // Okayama Castle / Garden
+      bg: "https://images.unsplash.com/photo-1572935246213-39d677df98b8?q=80&w=2070&auto=format&fit=crop", // Okayama Korakuen
       weatherIcon: 'sunny',
       temp: "3°C / 11°C",
       location: "岡山",
@@ -203,7 +204,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       desc: "倉敷美觀、返回京都基地",
       pass: true,
       passName: "JR 關西廣域鐵路周遊券",
-      bg: "https://images.unsplash.com/photo-1695627230485-6490606d194c?q=80&w=2070&auto=format&fit=crop", // Kurashiki
+      bg: "https://images.unsplash.com/photo-1695627230485-6490606d194c?q=80&w=2070&auto=format&fit=crop", // Kurashiki Canal
       weatherIcon: 'sunny',
       temp: "4°C / 12°C",
       location: "岡山 倉敷",
@@ -221,7 +222,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       title: "京都療癒日",
       desc: "迷你豬咖啡、錦市場、祇園",
       pass: false,
-      bg: "https://images.unsplash.com/photo-1627387494537-83b6329d9196?q=80&w=2070&auto=format&fit=crop", // Nishiki Market / Food
+      bg: "https://images.unsplash.com/photo-1627387494537-83b6329d9196?q=80&w=2070&auto=format&fit=crop", // Gion / Streets
       weatherIcon: 'cloudy',
       temp: "3°C / 8°C",
       location: "京都",
@@ -258,7 +259,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       title: "移動至大阪",
       desc: "心齋橋、道頓堀購物",
       pass: false,
-      bg: "https://images.unsplash.com/photo-1590559899731-a363c38706b0?q=80&w=2069&auto=format&fit=crop", // Dotonbori
+      bg: "https://images.unsplash.com/photo-1590559899731-a363c38706b0?q=80&w=2069&auto=format&fit=crop", // Dotonbori / Osaka Night
       weatherIcon: 'sunny',
       temp: "5°C / 10°C",
       location: "大阪",
@@ -295,7 +296,7 @@ export const ITINERARY_DATA: ItineraryDay[] = [
       title: "返台",
       desc: "最後時光、前往機場",
       pass: false,
-      bg: "https://images.unsplash.com/photo-1522071901873-411885a13f4d?q=80&w=2070&auto=format&fit=crop", // Airport
+      bg: "https://images.unsplash.com/photo-1522071901873-411885a13f4d?q=80&w=2070&auto=format&fit=crop", // Airport Runway
       weatherIcon: 'cloudy',
       temp: "6°C / 12°C",
       location: "關西機場",
