@@ -1,5 +1,5 @@
 {
-  "name": "2026 Kansai Winter Trip",
-  "description": "A digital itinerary for a 12-day winter trip to the Kansai region of Japan.",
+  "name": "Gemini React Base",
+  "description": "A robust, production-ready React + TypeScript + Tailwind starter template integrated with the Google GenAI SDK, ready for you to paste your existing project code for migration or refactoring.",
   "requestFramePermissions": []
 }

@@ -1,185 +1,120 @@
+
 import React, { useState } from 'react';
-import { ChevronRight, Snowflake } from 'lucide-react';
-import { ITINERARY_DATA, WASHI_PATTERN, HERO_IMAGE } from './constants';
-import { ItineraryDay } from './types';
-import DetailPanel from './components/DetailModal';
+import { Plus, Map, Calendar, ChevronRight, Copy } from 'lucide-react'; // Import Copy icon
+import { WASHI_PATTERN } from './constants';
+import { useTripManager } from './hooks/useTripManager';
+import TripView from './components/TripView';
+import TripSetup from './components/TripSetup';
+import type { TripSeason } from './types';
 
 const App: React.FC = () => {
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+  const { trips, createTrip, createTemplateTrip, deleteTrip, updateTripMeta } = useTripManager(); // Destructure createTemplateTrip
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
 
-  const handleHome = () => {
-    setSelectedDayIndex(null);
+  // If a trip is selected, show the TripView
+  if (selectedTripId) {
+    return (
+      <TripView 
+        tripId={selectedTripId} 
+        onBack={() => setSelectedTripId(null)}
+        onDeleteTrip={() => {
+          deleteTrip(selectedTripId);
+          setSelectedTripId(null);
+        }}
+        updateTripMeta={updateTripMeta}
+      />
+    );
+  }
+
+  // Otherwise, show the Trip List (Manager)
+  const handleSetupTrip = (name: string, startDate: string, days: number, season: TripSeason) => {
+    const newId = createTrip(name, startDate, days, season);
+    setIsSetupOpen(false);
+    setSelectedTripId(newId);
   };
 
-  const handleDaySelect = (index: number) => {
-    setSelectedDayIndex(index);
-  }
-
-  const handleNext = () => {
-    if (selectedDayIndex !== null && selectedDayIndex < ITINERARY_DATA.length - 1) {
-      setSelectedDayIndex(selectedDayIndex + 1);
-    }
-  }
-
-  const handlePrev = () => {
-    if (selectedDayIndex !== null && selectedDayIndex > 0) {
-      setSelectedDayIndex(selectedDayIndex - 1);
-    }
-  }
-
-  const isHome = selectedDayIndex === null;
-  const selectedDay = selectedDayIndex !== null ? ITINERARY_DATA[selectedDayIndex] : null;
+  const handleCreateTemplate = () => {
+    const newId = createTemplateTrip();
+    setSelectedTripId(newId);
+  };
 
   return (
     <div 
-      className="relative h-screen w-screen overflow-hidden font-sans text-ink bg-paper"
+      className="min-h-screen w-full bg-paper font-sans text-ink relative overflow-y-auto"
       style={{ backgroundImage: `url("${WASHI_PATTERN}")` }}
     >
-      {/* Hero Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-linear transform scale-105"
-        style={{ backgroundImage: `url('${HERO_IMAGE}')` }}
-      />
-      
-      {/* Overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-japan-blue/90 via-black/40 to-black/30 transition-opacity duration-500 ${isHome ? 'opacity-100' : 'opacity-0'}`} />
+      <TripSetup isOpen={isSetupOpen} onClose={() => setIsSetupOpen(false)} onSetup={handleSetupTrip} />
 
-      {/* Main Container */}
-      <div className="absolute inset-0 flex flex-row overflow-hidden">
-        
-        {/* Sidebar */}
-        <div 
-          className={`
-            relative z-10 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] flex-shrink-0
-            ${isHome ? 'w-full bg-transparent' : 'w-[80px] md:w-[380px] bg-white/90 backdrop-blur-md border-r border-gray-200/60'}
-          `}
-        >
-          {/* Sidebar Header */}
-          <div 
-            className={`
-              transition-all duration-500 flex-shrink-0
-              ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}
-            `}
-          >
-             <div className="flex items-center gap-2 mb-3">
-                <Snowflake className="animate-pulse" size={24} />
-                <span className="text-sm font-bold tracking-[0.4em] uppercase">2026 Winter</span>
-             </div>
-             <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-widest leading-tight text-center drop-shadow-md">
-               關西冬之旅
-             </h1>
-             <div className="mt-4 w-16 h-1 bg-japan-red shadow-lg rounded-full"></div>
-          </div>
-
-          <div 
-            onClick={handleHome}
-            className={`
-              cursor-pointer p-6 text-center transition-all duration-300 hover:bg-gray-50
-              ${!isHome ? 'hidden md:block opacity-100' : 'hidden opacity-0'}
-            `}
-          >
-            <div className="flex items-center justify-center gap-2 mb-1 text-japan-blue/80">
-              <Snowflake size={16} />
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase">2026</span>
-            </div>
-            <h1 className="text-2xl font-serif font-bold text-japan-blue tracking-widest">
-              關西冬之旅
-            </h1>
-          </div>
-
-          {/* List */}
-          <div className={`flex-1 overflow-y-auto overflow-x-hidden no-scrollbar ${isHome ? 'px-4 pb-20 pt-4' : ''}`}>
-            <div className={`${isHome ? 'max-w-2xl mx-auto space-y-4' : ''}`}>
-              {ITINERARY_DATA.map((item, index) => {
-                const isSelected = selectedDayIndex === index;
-                
-                return (
-                  <div
-                    key={index}
-                    onClick={() => handleDaySelect(index)}
-                    className={`
-                      relative cursor-pointer transition-all duration-300 group
-                      ${isHome 
-                          ? 'bg-white/85 backdrop-blur-sm hover:bg-white rounded-xl p-5 shadow-lg hover:shadow-2xl hover:scale-[1.02] border border-white/20' 
-                          : isSelected 
-                              ? 'bg-japan-blue text-white p-5 pl-6' 
-                              : 'hover:bg-gray-50 text-ink p-5 pl-6 border-b border-gray-100 last:border-0'
-                      }
-                      ${!isHome && 'h-[80px] flex justify-center items-center md:block md:h-auto'}
-                    `}
-                  >
-                     {/* Home Mode Layout */}
-                     {isHome && (
-                       <div className="flex items-center gap-5">
-                          <div className="flex flex-col items-center justify-center min-w-[60px] border-r border-gray-300 pr-4">
-                             <span className="text-2xl font-serif font-bold text-japan-blue">{item.date.split('/')[1]}</span>
-                             <span className="text-xs text-gray-500 uppercase font-bold">{item.weekday}</span>
-                          </div>
-                          <div className="flex-1">
-                             <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-serif font-bold text-xl text-ink">{item.title}</h3>
-                                {item.pass && <span className="text-[10px] font-bold text-white bg-japan-red px-2 py-0.5 rounded-full">JR PASS</span>}
-                             </div>
-                             <p className="text-sm text-gray-600 line-clamp-1">{item.desc}</p>
-                          </div>
-                          <ChevronRight className="text-gray-300" />
-                       </div>
-                     )}
-
-                    {/* Sidebar Mode Layout */}
-                    {!isHome && (
-                      <div className={`flex items-center ${!isHome ? 'flex-col md:flex-row' : 'flex-row'}`}>
-                        {isSelected && <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1 bg-japan-red" />}
-
-                        <div className={`
-                          flex flex-col items-center justify-center transition-all
-                          ${!isHome ? 'md:mr-4' : 'mr-5'}
-                          ${!isSelected && !isHome ? 'text-gray-400' : ''}
-                        `}>
-                          <span className={`font-serif font-bold leading-none ${isSelected ? 'text-lg md:text-2xl' : 'text-2xl'}`}>
-                            {item.date.split('/')[1]}
-                          </span>
-                          <span className={`text-[10px] uppercase mt-1 ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
-                            {item.weekday}
-                          </span>
-                        </div>
-
-                        <div className="hidden md:block flex-1 min-w-0">
-                           <div className="flex justify-between items-center mb-1">
-                            <h3 className={`font-bold text-lg font-serif truncate ${isSelected ? 'text-white' : 'text-ink'}`}>
-                              {item.title}
-                            </h3>
-                            {item.pass && !isSelected && (
-                              <span className="text-[10px] font-bold text-japan-red border border-japan-red/30 px-1.5 rounded bg-red-50">JR</span>
-                            )}
-                          </div>
-                          <p className={`text-sm truncate ${isSelected ? 'text-white/70' : 'text-gray-500'}`}>
-                            {item.desc}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {isHome && <div className="h-20" />}
-            </div>
-          </div>
+      <div className="max-w-3xl mx-auto px-6 py-12">
+        <div className="flex items-center gap-3 mb-8">
+          <Map className="text-japan-blue" size={32} />
+          <h1 className="text-3xl font-serif font-bold text-ink">我的旅程</h1>
         </div>
 
-        {/* Detail Panel */}
-        {selectedDay && selectedDayIndex !== null && (
-          <div className="flex-1 relative overflow-hidden bg-paper shadow-2xl z-20">
-            <DetailPanel 
-              day={selectedDay} 
-              onHome={handleHome}
-              onNext={handleNext}
-              onPrev={handlePrev}
-              hasNext={selectedDayIndex < ITINERARY_DATA.length - 1}
-              hasPrev={selectedDayIndex > 0}
-            />
+        <div className="grid gap-4">
+          {trips.map(trip => (
+            <div 
+              key={trip.id}
+              onClick={() => setSelectedTripId(trip.id)}
+              className="group relative bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-xl hover:scale-[1.01] transition-all duration-300"
+            >
+              <div className="flex h-32 md:h-40">
+                <div className="w-1/3 md:w-1/4 relative overflow-hidden">
+                   <img 
+                     src={trip.coverImage} 
+                     alt={trip.name} 
+                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                   />
+                   <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+                </div>
+                <div className="flex-1 p-5 flex flex-col justify-center">
+                   <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{trip.season}</span>
+                      <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{trip.days} Days</span>
+                   </div>
+                   <h2 className="text-2xl font-serif font-bold text-ink group-hover:text-japan-blue transition-colors mb-2">
+                     {trip.name}
+                   </h2>
+                   <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Calendar size={14} />
+                      <span className="font-mono">{trip.startDate}</span>
+                   </div>
+                </div>
+                <div className="pr-6 flex items-center justify-center text-gray-300 group-hover:text-japan-blue group-hover:translate-x-1 transition-all">
+                   <ChevronRight size={24} />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            <button 
+                onClick={() => setIsSetupOpen(true)}
+                className="flex items-center justify-center gap-2 py-6 border-2 border-dashed border-gray-300 rounded-2xl text-gray-400 font-bold hover:border-japan-blue hover:text-japan-blue hover:bg-white transition-all group"
+            >
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                <Plus size={20} />
+                </div>
+                <span>建立新旅程</span>
+            </button>
+
+            <button 
+                onClick={handleCreateTemplate}
+                className="flex items-center justify-center gap-2 py-6 border-2 border-dashed border-gray-300 rounded-2xl text-gray-400 font-bold hover:border-japan-blue hover:text-japan-blue hover:bg-white transition-all group"
+            >
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                <Copy size={18} />
+                </div>
+                <span>建立範本 (關西冬之旅)</span>
+            </button>
           </div>
-        )}
+        </div>
+        
+        <div className="mt-12 text-center text-gray-400 text-xs font-mono">
+           Travel Assistant v2.1
+        </div>
       </div>
     </div>
   );
