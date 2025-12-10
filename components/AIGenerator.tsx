@@ -56,6 +56,12 @@ const ITINERARY_SCHEMA: Schema = {
   }
 };
 
+// Helper function to strip Markdown code blocks
+const cleanJsonString = (str: string) => {
+  // Remove ```json and ``` or just ```
+  return str.replace(/```json\n?|```/g, '').trim();
+};
+
 const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, existingDays, startDate, tripName }) => {
   const [apiKey, setApiKey] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -143,9 +149,16 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
       });
 
       if (response.text) {
-        const data = JSON.parse(response.text) as ItineraryDay[];
-        onGenerate(data, !isSingleDay);
-        onClose();
+        try {
+            const cleanedText = cleanJsonString(response.text);
+            const data = JSON.parse(cleanedText) as ItineraryDay[];
+            onGenerate(data, !isSingleDay);
+            onClose();
+        } catch (parseError) {
+            console.error("JSON Parse Error:", parseError);
+            console.log("Raw Text:", response.text);
+            throw new Error("AI 回傳格式錯誤，請再試一次。");
+        }
       } else {
         throw new Error('No data returned');
       }
@@ -158,7 +171,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}

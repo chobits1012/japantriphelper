@@ -17,7 +17,15 @@ function useLocalStorage<T>(
   });
 
   useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(storedValue));
+    try {
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (error) {
+      console.error(`Error writing to localStorage key “${key}”:`, error);
+      // Optional: Dispatch a custom event or show a toast if quota is exceeded
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+         alert("儲存空間已滿！請刪除一些舊旅程以保存新資料。");
+      }
+    }
   }, [key, storedValue]);
 
   return [storedValue, setStoredValue];

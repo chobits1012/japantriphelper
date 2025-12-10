@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Flower2, Sun, Leaf, Plus, Moon, ArrowLeft, Trash2, Pencil, Check, X } from 'lucide-react';
-// ... other imports
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
@@ -26,7 +25,6 @@ interface TripViewProps {
 const DARK_MODE_KEY = 'kansai-trip-dark-mode';
 
 const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updateTripMeta }) => {
-  // ... existing hook logic
   // Dynamic Keys based on Trip ID
   const SETTINGS_KEY = `trip-${tripId}-settings`;
   const EXPENSE_KEY = `trip-${tripId}-expenses`;
@@ -293,10 +291,20 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
         >
           
           <div className={`transition-all duration-1000 flex-shrink-0 relative ${isHome ? 'h-[25vh] flex flex-col justify-end items-center pb-8 text-white text-shadow-lg' : 'h-0 overflow-hidden opacity-0'}`}>
-             {/* BACK BUTTON */}
-             <div className="absolute top-4 left-4 md:top-8 md:left-8 z-50">
+             {/* TOP NAVIGATION BAR */}
+             <div className="absolute top-4 left-4 md:top-8 md:left-8 z-50 flex justify-between w-[calc(100%-2rem)] md:w-[calc(100%-4rem)]">
                <button onClick={onBack} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-bold transition-all">
                  <ArrowLeft size={16} /> 我的旅程
+               </button>
+
+               {/* MOVED DELETE BUTTON HERE */}
+               <button 
+                 onClick={requestDeleteTrip} 
+                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md border border-red-500/30 text-white text-sm font-bold transition-all group"
+                 title="刪除整趟旅程"
+               >
+                 <span className="hidden md:inline text-xs opacity-80 group-hover:opacity-100">刪除旅程</span>
+                 <Trash2 size={16} />
                </button>
              </div>
 
@@ -435,9 +443,7 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
                <RotateCcw size={16} />
             </button>
             
-            <button onClick={requestDeleteTrip} title="刪除本旅程" className={`p-2 rounded-full shadow-lg transition-all duration-500 text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 hover:bg-red-500/50' : 'bg-red-500 hover:bg-red-600'}`}>
-               <Trash2 size={18} />
-            </button>
+            {/* DELETE BUTTON REMOVED FROM HERE */}
 
             <button onClick={() => setIsToolboxOpen(true)} title="旅遊工具箱" className={`p-2 rounded-full shadow-lg transition-all duration-500 text-white ${isHome ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30' : 'bg-orange-500 hover:bg-orange-600'}`}>
                <Briefcase size={18} />
