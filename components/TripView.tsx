@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Flower2, Sun, Leaf, Plus, Moon, ArrowLeft, Trash2, Pencil, Check, X } from 'lucide-react';
+// ... other imports
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
@@ -25,6 +26,7 @@ interface TripViewProps {
 const DARK_MODE_KEY = 'kansai-trip-dark-mode';
 
 const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updateTripMeta }) => {
+  // ... existing hook logic
   // Dynamic Keys based on Trip ID
   const SETTINGS_KEY = `trip-${tripId}-settings`;
   const EXPENSE_KEY = `trip-${tripId}-expenses`;
@@ -305,17 +307,17 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
              
              {/* EDITABLE TITLE */}
              {isEditingTitle ? (
-               <div className="flex items-center justify-center px-4 w-full max-w-lg mx-auto relative">
+               <div className="flex items-center justify-center gap-2 px-4 w-full max-w-lg mx-auto relative z-20">
                   {/* Edit Input centered */}
                   <input 
                     value={tempTitle}
                     onChange={(e) => setTempTitle(e.target.value)}
-                    className="text-4xl md:text-5xl font-serif font-bold tracking-widest leading-tight text-center drop-shadow-md bg-transparent border-b-2 border-white/50 text-white outline-none w-full"
+                    className="flex-1 min-w-0 text-3xl md:text-5xl font-serif font-bold tracking-widest leading-tight text-center drop-shadow-md bg-transparent border-b-2 border-white/50 text-white outline-none"
                     autoFocus
                     onKeyDown={(e) => { if(e.key === 'Enter') handleSaveTitle(); }}
                   />
-                  {/* Actions absolute right */}
-                  <div className="absolute -right-16 flex gap-1">
+                  {/* Actions inline */}
+                  <div className="flex gap-1 flex-shrink-0">
                     <button onClick={handleSaveTitle} className="p-2 rounded-full bg-white/20 hover:bg-white/40 text-green-400 transition-colors">
                       <Check size={20} />
                     </button>
