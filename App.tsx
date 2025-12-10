@@ -170,7 +170,7 @@ const App: React.FC = () => {
             </button>
         </div>
         
-       <div className="mt-16 text-center text-white/40 text-xs font-mono tracking-widest space-y-2">
+        <div className="mt-16 text-center text-white/40 text-xs font-mono tracking-widest space-y-2 pb-8">
            <p>TRAVEL ASSISTANT v2.1</p>
            <div className="flex flex-col items-center gap-1">
              <p className="text-white/60 font-bold">James Wang</p>
@@ -182,6 +182,16 @@ const App: React.FC = () => {
              >
                threads: jameswangwangwang
              </a>
+           </div>
+
+           {/* PWA Tip */}
+           <div className="mt-6 p-3 bg-white/10 rounded-lg backdrop-blur-sm inline-block max-w-xs mx-auto border border-white/10">
+              <p className="text-white/90 font-sans font-bold mb-1 text-xs">防丟失小撇步 💡</p>
+              <p className="text-white/60 leading-tight text-[10px]">
+                在 Safari 點擊「分享」<br/>
+                選擇「加入主畫面」<br/>
+                可讓資料保存更長久！
+              </p>
            </div>
         </div>
       </div>
