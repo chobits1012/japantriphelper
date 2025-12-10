@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { Snowflake, Sparkles, RotateCcw, Briefcase, Flower2, Sun, Leaf, Plus, Moon, ArrowLeft, Trash2, Pencil, Check, X } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
@@ -157,7 +156,7 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
         title: "自由活動",
         desc: "點擊編輯來規劃行程",
         pass: false,
-        bg: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000",
+        bg: "https://picsum.photos/id/28/1000/600",
         location: "Japan",
         weatherIcon: tripSettings.season === 'winter' ? 'snow' : 'sunny',
         temp: "--°C",
@@ -306,7 +305,8 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
              
              {/* EDITABLE TITLE */}
              {isEditingTitle ? (
-               <div className="flex items-center gap-2 justify-center px-4 w-full max-w-lg mx-auto">
+               <div className="flex items-center justify-center px-4 w-full max-w-lg mx-auto relative">
+                  {/* Edit Input centered */}
                   <input 
                     value={tempTitle}
                     onChange={(e) => setTempTitle(e.target.value)}
@@ -314,7 +314,8 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
                     autoFocus
                     onKeyDown={(e) => { if(e.key === 'Enter') handleSaveTitle(); }}
                   />
-                  <div className="flex gap-1">
+                  {/* Actions absolute right */}
+                  <div className="absolute -right-16 flex gap-1">
                     <button onClick={handleSaveTitle} className="p-2 rounded-full bg-white/20 hover:bg-white/40 text-green-400 transition-colors">
                       <Check size={20} />
                     </button>
@@ -324,16 +325,24 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
                   </div>
                </div>
              ) : (
-               <div className="flex items-center justify-center gap-3 group/title px-4 relative">
-                  <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-widest leading-tight text-center drop-shadow-md">
+               <div className="flex items-center justify-between w-full max-w-4xl mx-auto px-4 group/title relative">
+                  {/* Left Spacer */}
+                  <div className="flex-1"></div>
+                  
+                  {/* Title (Centered) */}
+                  <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-widest leading-tight text-center drop-shadow-md shrink-0">
                     {tripSettings.name}
                   </h1>
-                  <button 
-                    onClick={() => { setTempTitle(tripSettings.name); setIsEditingTitle(true); }}
-                    className="md:opacity-0 md:group-hover/title:opacity-100 transition-opacity p-2 rounded-full hover:bg-white/20 text-white/80"
-                  >
-                    <Pencil size={20} />
-                  </button>
+                  
+                  {/* Right Button (Same width as spacer effectively, keeping title centered) */}
+                  <div className="flex-1 flex justify-start pl-4">
+                    <button 
+                        onClick={() => { setTempTitle(tripSettings.name); setIsEditingTitle(true); }}
+                        className="opacity-0 group-hover/title:opacity-100 transition-opacity p-2 rounded-full hover:bg-white/20 text-white/80"
+                    >
+                        <Pencil size={20} />
+                    </button>
+                  </div>
                </div>
              )}
 
