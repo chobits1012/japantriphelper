@@ -557,7 +557,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       setSelectedPass('');
                       setCustomPassName('');
                     }}
-                    className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600 shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                    className="w-full p-3 text-base border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red font-bold text-gray-600 shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
                   >
                     {REGIONS.map(r => (
                       <option key={r} value={r}>
@@ -574,7 +574,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                         setCustomPassName('');
                       }
                     }}
-                    className="w-full p-3 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                    className="w-full p-3 text-base border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red shadow-sm dark:bg-slate-800 dark:text-white dark:border-slate-700"
                   >
                     <option value="">選擇票券...</option>
                     {REGIONAL_PASSES[selectedRegion]?.map(pass => (
@@ -594,20 +594,20 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       value={customPassName}
                       onChange={e => setCustomPassName(e.target.value)}
                       placeholder="輸入票券名稱..."
-                      className="flex-1 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                      className="flex-1 p-3 text-base border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
                       autoFocus
                     />
                   ) : (
                     <div className="flex-1"></div>
                   )}
 
-                  <span className="text-xs font-bold text-gray-400 dark:text-slate-500">
+                  <span className="text-xs font-bold text-gray-400 dark:text-slate-500 whitespace-nowrap">
                     範圍:
                   </span>
                   <select
                     value={passDuration}
                     onChange={e => setPassDuration(parseInt(e.target.value))}
-                    className="w-24 p-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
+                    className="w-24 p-3 text-base border border-red-200 rounded-lg bg-white focus:outline-none focus:border-japan-red dark:bg-slate-800 dark:text-white dark:border-slate-700"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 10, 14, 21].map(d => (
                       <option key={d} value={d}>
@@ -627,7 +627,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       <button
                         key={c.value}
                         onClick={() => setPassColor(c.value)}
-                        className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
+                        className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
                           passColor === c.value
                             ? 'border-gray-400 scale-110 shadow-sm'
                             : 'border-transparent opacity-80 hover:opacity-100'
@@ -644,16 +644,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                   <button
                     onClick={handleBatchApplyPass}
                     disabled={!selectedPass && !customPassName}
-                    className="flex-1 bg-japan-red text-white py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 dark:disabled:bg-slate-700"
+                    className="flex-1 bg-japan-red text-white py-3 rounded-lg text-sm font-bold shadow-sm hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 dark:disabled:bg-slate-700"
                   >
-                    <CheckCircle2 size={16} />
+                    <CheckCircle2 size={18} />
                     立即套用 ({passDuration}天)
                   </button>
                   <button
                     onClick={handleBatchRemovePass}
-                    className="flex-1 bg-white text-gray-500 border border-gray-200 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                    className="flex-1 bg-white text-gray-500 border border-gray-200 py-3 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-red-500 flex items-center justify-center gap-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    <Eraser size={16} />
+                    <Eraser size={18} />
                     移除 ({passDuration}天)
                   </button>
                 </div>
@@ -662,9 +662,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
 
             {/* Header Edit */}
             <div className="space-y-4 border-b border-gray-100 pb-6 dark:border-slate-800">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase">
+                  <label className="text-xs font-bold text-gray-400 uppercase block mb-1">
                     標題
                   </label>
                   <input
@@ -673,11 +673,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                     onChange={e =>
                       setEditData({ ...editData, title: e.target.value })
                     }
-                    className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500"
+                    className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-2 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500 rounded-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase">
+                  <label className="text-xs font-bold text-gray-400 uppercase block mb-1">
                     地點 (影響天氣)
                   </label>
                   <input
@@ -686,13 +686,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                     onChange={e =>
                       setEditData({ ...editData, location: e.target.value })
                     }
-                    className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-1 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500"
+                    className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-2 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500 rounded-none"
                     placeholder="例如: 東京"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-400 uppercase">
+                <label className="text-xs font-bold text-gray-400 uppercase block mb-1">
                   描述
                 </label>
                 <textarea
@@ -700,7 +700,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                   onChange={e =>
                     setEditData({ ...editData, desc: e.target.value })
                   }
-                  className="w-full p-3 bg-gray-50 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-japan-blue/20 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-sky-500/20"
+                  className="w-full p-3 bg-gray-50 rounded-lg text-base text-gray-700 outline-none focus:ring-2 focus:ring-japan-blue/20 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-sky-500/20"
                   rows={2}
                 />
               </div>
@@ -716,9 +716,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                   </span>
                   <button
                     onClick={handleAddEvent}
-                    className="text-japan-blue hover:underline flex items-center gap-1 dark:text-sky-400"
+                    className="text-japan-blue hover:underline flex items-center gap-1 dark:text-sky-400 font-bold px-2 py-1 bg-blue-50 rounded dark:bg-slate-800"
                   >
-                    <Plus size={14} /> 新增
+                    <Plus size={16} /> 新增
                   </button>
                 </div>
               </label>
@@ -739,17 +739,17 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => setEditingEventIndex(null)}
-                                  className="text-gray-400 hover:text-green-600 p-1"
+                                  className="text-gray-400 hover:text-green-600 p-2"
                                   title="完成編輯"
                                 >
-                                  <CheckCircle2 size={18} />
+                                  <CheckCircle2 size={24} />
                                 </button>
                                 <button
                                   onClick={() => requestRemoveEvent(index)}
-                                  className="text-gray-400 hover:text-red-500 p-1"
+                                  className="text-gray-400 hover:text-red-500 p-2"
                                   title="刪除"
                                 >
-                                  <Trash2 size={18} />
+                                  <Trash2 size={24} />
                                 </button>
                               </div>
                            </div>
@@ -761,7 +761,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                   type="text"
                                   value={event.time}
                                   onChange={e => handleEventChange(index, 'time', e.target.value)}
-                                  className="w-full p-2 text-sm font-bold border rounded bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue"
+                                  className="w-full p-3 text-base font-bold border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue"
                                 />
                               </div>
                               <div className="w-2/3">
@@ -769,7 +769,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                 <select
                                   value={event.category || 'sightseeing'}
                                   onChange={e => handleEventChange(index, 'category', e.target.value)}
-                                  className="w-full p-2 text-sm border rounded bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue"
+                                  className="w-full p-3 text-base border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue appearance-none"
                                 >
                                   <option value="sightseeing">景點</option>
                                   <option value="food">美食</option>
@@ -788,19 +788,19 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                 type="text"
                                 value={event.title}
                                 onChange={e => handleEventChange(index, 'title', e.target.value)}
-                                className="w-full p-2 font-bold border rounded bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue"
+                                className="w-full p-3 font-bold border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue text-base"
                               />
                            </div>
 
                            <div>
                               <label className="text-[10px] font-bold text-gray-400 block mb-1">地圖關鍵字</label>
-                              <div className="flex items-center gap-2 border rounded bg-gray-50 dark:bg-slate-900 dark:border-slate-600 px-2">
-                                <MapPin size={14} className="text-gray-400 flex-shrink-0" />
+                              <div className="flex items-center gap-2 border rounded-lg bg-gray-50 dark:bg-slate-900 dark:border-slate-600 px-3 py-1">
+                                <MapPin size={16} className="text-gray-400 flex-shrink-0" />
                                 <input
                                   type="text"
                                   value={event.mapQuery || ''}
                                   onChange={e => handleEventChange(index, 'mapQuery', e.target.value)}
-                                  className="w-full p-2 text-xs bg-transparent dark:text-white focus:outline-none"
+                                  className="w-full p-2 text-base bg-transparent dark:text-white focus:outline-none"
                                   placeholder="例如: 清水寺"
                                 />
                               </div>
@@ -811,7 +811,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                               <textarea
                                 value={event.desc}
                                 onChange={e => handleEventChange(index, 'desc', e.target.value)}
-                                className="w-full p-2 text-sm border rounded h-20 resize-none bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue"
+                                className="w-full p-3 text-base border rounded-lg h-24 resize-none bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue"
                               />
                            </div>
                         </div>
@@ -822,15 +822,15 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                         <div 
                           key={index}
                           onClick={() => setEditingEventIndex(index)}
-                          className="flex items-center gap-3 bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100 p-3 rounded-lg cursor-pointer transition-all group dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800"
+                          className="flex items-center gap-3 bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100 p-4 rounded-xl cursor-pointer transition-all group dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800"
                         >
-                           <div className="text-xs font-bold text-gray-400 w-12 flex-shrink-0 dark:text-slate-500">{event.time}</div>
+                           <div className="text-sm font-bold text-gray-400 w-12 flex-shrink-0 dark:text-slate-500">{event.time}</div>
                            <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-sm text-ink truncate dark:text-slate-200">{event.title}</h4>
+                              <h4 className="font-bold text-base text-ink truncate dark:text-slate-200">{event.title}</h4>
                               <p className="text-xs text-gray-500 truncate dark:text-slate-400">{event.desc}</p>
                            </div>
-                           <div className="text-gray-300 group-hover:text-japan-blue dark:group-hover:text-sky-400 transition-colors">
-                              <Pencil size={14} />
+                           <div className="text-gray-300 group-hover:text-japan-blue dark:group-hover:text-sky-400 transition-colors p-2">
+                              <Pencil size={18} />
                            </div>
                         </div>
                       );
@@ -848,7 +848,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
             </div>
 
             {/* Footer Edit */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-slate-800">
+            <div className="grid grid-cols-1 gap-4 pt-4 border-t border-gray-100 dark:border-slate-800">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-indigo-400 uppercase">
                   住宿資訊
@@ -865,7 +865,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       },
                     })
                   }
-                  className="w-full p-2 border rounded text-sm bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                  className="w-full p-3 border rounded-lg text-base bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
                   placeholder="飯店名稱"
                 />
               </div>
@@ -878,7 +878,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                   onChange={e =>
                     setEditData({ ...editData, tips: e.target.value })
                   }
-                  className="w-full p-2 border rounded text-sm h-20 resize-none bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
+                  className="w-full p-3 border rounded-lg text-base h-24 resize-none bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600"
                   placeholder="旅遊小提醒"
                 />
               </div>

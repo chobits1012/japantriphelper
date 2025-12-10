@@ -40,10 +40,10 @@ const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative flex flex-col max-h-[90vh]">
         
-        {/* Decorative Header */}
-        <div className={`h-32 relative overflow-hidden flex items-center justify-center transition-colors duration-500
+        {/* Decorative Header - Fixed */}
+        <div className={`h-32 relative overflow-hidden flex-shrink-0 flex items-center justify-center transition-colors duration-500
           ${season === 'spring' ? 'bg-pink-400' : 
             season === 'summer' ? 'bg-orange-400' : 
             season === 'autumn' ? 'bg-red-500' : 'bg-sky-500'}
@@ -60,7 +60,8 @@ const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
            </h2>
         </div>
 
-        <div className="p-8 space-y-6">
+        {/* Scrollable Content Body */}
+        <div className="p-8 space-y-6 overflow-y-auto">
            {/* Trip Name */}
            <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2">
@@ -71,7 +72,7 @@ const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
                 value={tripName}
                 onChange={(e) => setTripName(e.target.value)}
                 placeholder="例如：2025 東京賞櫻團"
-                className="w-full text-lg font-bold border-b-2 border-gray-200 dark:border-slate-700 focus:border-japan-blue dark:focus:border-sky-500 outline-none py-2 text-ink dark:text-white placeholder-gray-300 bg-transparent"
+                className="w-full text-lg font-bold border-b-2 border-gray-200 dark:border-slate-700 focus:border-japan-blue dark:focus:border-sky-500 outline-none py-2 text-ink dark:text-white placeholder-gray-300 bg-transparent rounded-none"
               />
            </div>
 
@@ -121,7 +122,7 @@ const TripSetup: React.FC<TripSetupProps> = ({ isOpen, onClose, onSetup }) => {
                 type="date" 
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full text-lg font-mono font-bold border-b-2 border-gray-200 dark:border-slate-700 focus:border-japan-blue dark:focus:border-sky-500 outline-none py-2 text-ink dark:text-white bg-transparent"
+                className="w-full text-lg font-mono font-bold border-b-2 border-gray-200 dark:border-slate-700 focus:border-japan-blue dark:focus:border-sky-500 outline-none py-2 text-ink dark:text-white bg-transparent rounded-none"
               />
            </div>
 

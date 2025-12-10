@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, Upload, Copy, Check } from 'lucide-react';
 import LZString from 'lz-string';
@@ -25,7 +24,10 @@ const DEFAULT_CATEGORIES = [
   { title: "其他", items: ["雨傘", "筆", "Visit Japan Web 截圖"] }
 ];
 
-const EXPENSE_CATEGORIES = {
+// Define type for expense categories to avoid implicit any errors
+type ExpenseCategoryKey = 'food' | 'shopping' | 'transport' | 'hotel' | 'other';
+
+const EXPENSE_CATEGORIES: Record<string, { label: string; color: string; bg: string }> = {
   food: { label: '美食', color: '#fb923c', bg: 'bg-orange-400' },
   shopping: { label: '購物', color: '#c084fc', bg: 'bg-purple-400' },
   transport: { label: '交通', color: '#9ca3af', bg: 'bg-gray-400' },
@@ -52,7 +54,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   // --- Expense State ---
   const [newExpTitle, setNewExpTitle] = useState('');
   const [newExpAmount, setNewExpAmount] = useState('');
-  const [newExpCat, setNewExpCat] = useState<ExpenseItem['category']>('food');
+  const [newExpCat, setNewExpCat] = useState<string>('food');
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState(tripSettings.budgetJPY?.toString() || '');
 
@@ -151,7 +153,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   };
 
   // Calculate Expense Stats
-  const totalJPY = expenses.reduce((sum, item) => sum + item.amountJPY, 0);
+  const totalJPY = expenses.reduce((sum, item) => sum + (item.amountJPY || 0), 0);
   const budget = tripSettings.budgetJPY || 0;
   const remaining = budget - totalJPY;
   const percentSpent = budget > 0 ? Math.min((totalJPY / budget) * 100, 100) : 0;
@@ -161,8 +163,10 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   const categoryStats = useMemo(() => {
     const stats: Record<string, number> = { food: 0, shopping: 0, transport: 0, hotel: 0, other: 0 };
     expenses.forEach(item => {
-      if (stats[item.category] !== undefined) {
-        stats[item.category] += item.amountJPY;
+      // Use fallback 'other' if category is undefined or not in list
+      const cat = EXPENSE_CATEGORIES[item.category] ? item.category : 'other';
+      if (stats[cat] !== undefined) {
+        stats[cat] += (item.amountJPY || 0);
       }
     });
     return stats;
@@ -480,7 +484,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                     {totalJPY > 0 && Object.entries(categoryStats).map(([cat, amount]) => {
                        if (amount === 0) return null;
                        const pct = (amount / totalJPY) * 100;
-                       // @ts-ignore
+                       
                        const colorClass = EXPENSE_CATEGORIES[cat]?.bg || 'bg-gray-400';
                        return (
                           <div key={cat} style={{ width: `${pct}%` }} className={`h-full ${colorClass}`} title={`${cat}: ¥${amount}`} />
@@ -492,8 +496,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                  <div className="flex flex-wrap gap-2 pt-2">
                     {Object.entries(categoryStats).map(([cat, amount]) => {
                        if (amount === 0) return null;
-                       // @ts-ignore
-                       const conf = EXPENSE_CATEGORIES[cat];
+                       const conf = EXPENSE_CATEGORIES[cat] || { label: cat, bg: 'bg-gray-400', color: '#9ca3af' };
                        return (
                           <div key={cat} className="flex items-center gap-1.5 text-xs bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded border border-gray-100 dark:border-slate-700">
                              <div className={`w-2 h-2 rounded-full ${conf.bg}`} />
