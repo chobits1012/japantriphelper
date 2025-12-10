@@ -3,14 +3,16 @@ import {
   Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight,
   ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon, Search, MapPin, LayoutList, Coffee, Camera, Utensils, ShoppingBag, Plane
 } from 'lucide-react';
-import type { ItineraryDay, ItineraryEvent } from '../types';
+import type { ItineraryDay, ItineraryEvent, TripSeason } from '../types';
 import TimelineEvent from './TimelineEvent';
 import ConfirmModal from './ConfirmModal';
-import PassManager from './PassManager'; // Import the new component
+import PassManager from './PassManager'; 
+import SeasonBackground from './SeasonBackground'; // Import the new background component
 
 interface DetailPanelProps {
   day: ItineraryDay;
   allDays: ItineraryDay[];
+  season: TripSeason; // New prop
   onUpdate: (updatedDay: ItineraryDay | ItineraryDay[]) => void;
   onHome: () => void;
   onNext: () => void;
@@ -49,7 +51,7 @@ const getLocationQuery = (loc: string) => {
   return loc;
 };
 
-const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHome, onNext, onPrev, hasPrev, hasNext, className }) => {
+const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdate, onHome, onNext, onPrev, hasPrev, hasNext, className }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<ItineraryDay>(day);
   const [editingEventIndex, setEditingEventIndex] = useState<number | null>(null);
@@ -153,17 +155,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       setEditData({ ...editData, events: newEvents });
       setEditingEventIndex(null);
     } else if (confirmState.type === 'removePass') {
-      // Simplified Remove Logic: Removes pass from current day onwards (batch size 1 for simplicity here, or extend logic)
-      // Ideally, PassManager handles logic, but parent needs to confirm.
-      // We will perform a simple removal for the current day here to be safe, 
-      // or implement the full loop if we want full fidelity.
-      // Let's implement a safe loop for 30 days max to be sure we cover a range.
       const updates: ItineraryDay[] = [];
       const startIndex = allDays.findIndex(d => d.day === day.day);
       if (startIndex !== -1) {
-         // Default to removing for up to 7 days if we don't know duration, or just 1 day.
-         // Let's do 1 day for safety since we lost duration state in this file. 
-         // OR better: Ask user in a future update. For now, remove from *this day only*.
          const targetDay = allDays[startIndex];
          updates.push({
             ...targetDay,
@@ -198,11 +192,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, onUpdate, onHom
       />
 
       {!isEditing && (
-        <>
-          <div className="absolute inset-0 bg-cover bg-center opacity-25 grayscale-0 pointer-events-none z-0 transition-all duration-700 ease-in-out transform scale-105" style={{ backgroundImage: `url('${day.bg}')` }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/70 pointer-events-none z-0 transition-opacity duration-1000" />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/95 via-slate-950/85 to-slate-950/70 pointer-events-none z-0 transition-opacity duration-1000 dark:opacity-100 opacity-0" />
-        </>
+        <SeasonBackground season={season} weather={day.weatherIcon} />
       )}
 
       {/* Floating Action Buttons */}
