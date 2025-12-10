@@ -7,7 +7,7 @@ import type { ItineraryDay, ItineraryEvent, TripSeason } from '../types';
 import TimelineEvent from './TimelineEvent';
 import ConfirmModal from './ConfirmModal';
 import PassManager from './PassManager'; 
-import SeasonBackground from './SeasonBackground'; // Import the new background component
+import { SeasonBackground } from './SeasonBackground'; // Correctly using Named Import
 
 interface DetailPanelProps {
   day: ItineraryDay;
