@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { ItineraryDay, TripSettings } from '../types';
@@ -22,7 +21,11 @@ const recalculateDates = (days: ItineraryDay[], startDateStr: string): Itinerary
   });
 };
 
-export const useItinerary = (tripId: string, tripSettings: TripSettings) => {
+export const useItinerary = (
+  tripId: string, 
+  tripSettings: TripSettings,
+  onDaysChange?: (newCount: number) => void // New callback prop
+) => {
   const STORAGE_KEY = `trip-${tripId}-itinerary`;
 
   const [itineraryData, setItineraryData] = useLocalStorage<ItineraryDay[]>(STORAGE_KEY, []);
@@ -34,15 +37,19 @@ export const useItinerary = (tripId: string, tripSettings: TripSettings) => {
       title: "新的一天",
       desc: "自由安排行程",
       pass: false,
-      bg: "https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1000",
+      bg: "https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1000", // Will be replaced by Picsum in UI ideally
       location: "Japan",
       weatherIcon: tripSettings.season === 'winter' ? 'snow' : 'sunny',
       temp: "--°C",
       events: []
     };
 
-    setItineraryData(prevData => recalculateDates([...prevData, newDay], tripSettings.startDate));
-  }, [setItineraryData, tripSettings.season, tripSettings.startDate]);
+    setItineraryData(prevData => {
+      const newDays = recalculateDates([...prevData, newDay], tripSettings.startDate);
+      if (onDaysChange) onDaysChange(newDays.length); // Trigger callback
+      return newDays;
+    });
+  }, [setItineraryData, tripSettings.season, tripSettings.startDate, onDaysChange]);
 
   const deleteDay = useCallback((id: string) => {
     setItineraryData(prevData => {
@@ -51,9 +58,11 @@ export const useItinerary = (tripId: string, tripSettings: TripSettings) => {
         return prevData;
       }
       const newData = prevData.filter(d => d.id !== id);
-      return recalculateDates(newData, tripSettings.startDate);
+      const recalculated = recalculateDates(newData, tripSettings.startDate);
+      if (onDaysChange) onDaysChange(recalculated.length); // Trigger callback
+      return recalculated;
     });
-  }, [setItineraryData, tripSettings.startDate]);
+  }, [setItineraryData, tripSettings.startDate, onDaysChange]);
 
   const reorderDays = useCallback((activeId: string, overId: string) => {
     setItineraryData((items) => {
@@ -67,22 +76,20 @@ export const useItinerary = (tripId: string, tripSettings: TripSettings) => {
   const updateDay = useCallback((updatedDay: ItineraryDay | ItineraryDay[] | Partial<ItineraryDay>) => {
     setItineraryData(prevData => {
         const updates = Array.isArray(updatedDay) ? updatedDay : [updatedDay];
-        // 使用永不改變的 `id` 作為 key，確保更新的準確性
         const updateMap = new Map<string, ItineraryDay>(
             updates.map((d): [string, ItineraryDay] => [d.id!, d as ItineraryDay])
         );
-        // 使用 id 來比對並更新，避免因排序變動而出錯
         return prevData.map(day => ({ ...day, ...updateMap.get(day.id) }));
     });
   }, [setItineraryData]);
 
   return {
     itineraryData,
-    setItineraryData, // Expose setter for complex cases like AI generation
+    setItineraryData, 
     addDay,
     deleteDay,
     reorderDays,
     updateDay,
-    recalculateDates, // Expose for use in other parts like TripSetup
+    recalculateDates, 
   };
 };
