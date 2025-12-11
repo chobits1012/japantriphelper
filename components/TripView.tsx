@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Snowflake, Sparkles, RotateCcw, Briefcase, Flower2, Sun, Leaf, Plus, Moon, ArrowLeft, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Snowflake, Sparkles, RotateCcw, Briefcase, Flower2, Sun, Leaf, Plus, Moon, ArrowLeft, Trash2, Pencil, Check, X, ClipboardCopy } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
@@ -77,6 +77,9 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
   // 7. Title Edit State
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState('');
+
+  // 8. Clipboard State
+  const [isCopied, setIsCopied] = useState(false);
 
   // DnD Sensors
   const sensors = useSensors(
@@ -207,6 +210,29 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
     setIsEditingTitle(false);
   };
 
+  // --- Copy Text Logic ---
+  const handleCopyText = () => {
+    let text = `【${tripSettings.name}】\n日期：${tripSettings.startDate} 出發\n\n`;
+    
+    itineraryData.forEach(day => {
+      text += `📅 ${day.day} (${day.date} ${day.weekday}) - ${day.title}\n`;
+      text += `📍 ${day.desc}\n`;
+      if(day.accommodation) text += `🏨 住宿：${day.accommodation.name}\n`;
+      
+      day.events.forEach(event => {
+        text += `   - ${event.time} ${event.title}`;
+        if(event.desc) text += ` : ${event.desc}`;
+        text += '\n';
+      });
+      text += '\n------------------\n\n';
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
   const selectedDay = selectedDayIndex !== null ? itineraryData[selectedDayIndex] : null;
   const activeDragItem = activeDragId ? itineraryData.find(d => d.id === activeDragId) : null;
 
@@ -297,15 +323,29 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
                  <ArrowLeft size={16} /> 我的旅程
                </button>
 
-               {/* MOVED DELETE BUTTON HERE */}
-               <button 
-                 onClick={requestDeleteTrip} 
-                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md border border-red-500/30 text-white text-sm font-bold transition-all group"
-                 title="刪除整趟旅程"
-               >
-                 <span className="hidden md:inline text-xs opacity-80 group-hover:opacity-100">刪除旅程</span>
-                 <Trash2 size={16} />
-               </button>
+               <div className="flex gap-2">
+                 {/* COPY TEXT BUTTON */}
+                 <button 
+                   onClick={handleCopyText} 
+                   className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-bold transition-all group"
+                   title="複製純文字行程"
+                 >
+                   <span className="hidden md:inline text-xs opacity-80 group-hover:opacity-100">
+                     {isCopied ? '已複製' : '複製文字'}
+                   </span>
+                   {isCopied ? <Check size={16} className="text-green-400" /> : <ClipboardCopy size={16} />}
+                 </button>
+
+                 {/* DELETE BUTTON */}
+                 <button 
+                   onClick={requestDeleteTrip} 
+                   className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md border border-red-500/30 text-white text-sm font-bold transition-all group"
+                   title="刪除整趟旅程"
+                 >
+                   <span className="hidden md:inline text-xs opacity-80 group-hover:opacity-100">刪除旅程</span>
+                   <Trash2 size={16} />
+                 </button>
+               </div>
              </div>
 
              <div className="flex items-center gap-2 mb-3">
@@ -461,6 +501,7 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
             <DetailPanel 
               day={selectedDay} 
               allDays={itineraryData}
+              season={tripSettings.season}
               onUpdate={updateDay} 
               onHome={handleHome}
               onNext={handleNext}
