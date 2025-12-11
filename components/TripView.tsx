@@ -33,7 +33,7 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
   // 1. Trip Settings
   const [tripSettings, setTripSettings] = useLocalStorage<TripSettings>(SETTINGS_KEY, { name: "新旅程", startDate: "2026-01-01", season: 'spring' });
   
-  // 2. Itinerary State
+  // 2. Itinerary State - Pass callback to sync day count
   const {
     itineraryData,
     setItineraryData,
@@ -41,7 +41,9 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
     deleteDay,
     reorderDays,
     updateDay,
-  } = useItinerary(tripId, tripSettings);
+  } = useItinerary(tripId, tripSettings, (newCount) => {
+      updateTripMeta(tripId, { days: newCount });
+  });
   
   // 3. UI State
   const {
@@ -182,6 +184,8 @@ const TripView: React.FC<TripViewProps> = ({ tripId, onBack, onDeleteTrip, updat
     const daysWithIds = newGeneratedDays.map(d => ({ ...d, id: d.id || Math.random().toString(36).substr(2, 9) }));
     if (isFullReplace) {
       setItineraryData(daysWithIds);
+      // Update meta days count
+      updateTripMeta(tripId, { days: daysWithIds.length });
       setSelectedDayIndex(null);
     } else {
       setItineraryData(prevData => {
