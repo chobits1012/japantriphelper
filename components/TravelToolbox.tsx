@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, Upload, Copy, Check } from 'lucide-react';
+import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, Upload, Copy, Check, AlertTriangle } from 'lucide-react';
 import LZString from 'lz-string';
 import type { ExpenseItem, ChecklistCategory, ChecklistItem, TripSettings, ItineraryDay } from '../types';
 
@@ -811,6 +811,24 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
           {/* --- BACKUP TAB --- */}
           {activeTab === 'backup' && (
             <div className="space-y-6 pt-2">
+              
+              {/* WARNING ALERT */}
+              <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-xl p-4 flex items-start gap-3">
+                <div className="text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0">
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-yellow-800 dark:text-yellow-400 text-sm mb-1">重要提示：請定期備份</h4>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-500/80 leading-relaxed">
+                    您的旅程資料目前僅儲存在這台裝置的瀏覽器中。
+                    <br />
+                    若清除瀏覽紀錄或遺失手機，資料可能會消失。
+                    <br />
+                    <strong>建議您定期點擊下方按鈕，將檔案下載保存或複製代碼傳給自己。</strong>
+                  </p>
+                </div>
+              </div>
+
               <div className="bg-gray-50 dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 text-center">
                  <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm text-japan-blue dark:text-sky-400">
                     <Cloud size={24} />
