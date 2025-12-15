@@ -6,7 +6,6 @@ interface SeasonBackgroundProps {
   weather?: 'sunny' | 'cloudy' | 'rain' | 'snow';
 }
 
-// Changed to Named Export to avoid build issues
 export const SeasonBackground: React.FC<SeasonBackgroundProps> = ({ season, weather }) => {
   // 1. 定義季節漸層色票 (含深色模式)
   const getGradient = () => {
