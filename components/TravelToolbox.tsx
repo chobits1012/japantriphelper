@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Wallet, CheckSquare, Plus, Trash2, RefreshCw, TrendingUp, Coins, Cloud, FileJson, ChevronDown, ChevronRight, FolderPlus, Pencil, Save, Upload, Copy, Check, AlertTriangle } from 'lucide-react';
 import LZString from 'lz-string';
 import type { ExpenseItem, ChecklistCategory, ChecklistItem, TripSettings, ItineraryDay } from '../types';
+import ConfirmModal from './ConfirmModal';
+import { EXCHANGE_RATE_API_URL } from '../constants';
 
 interface TravelToolboxProps {
   isOpen: boolean;
@@ -44,6 +46,21 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'currency' | 'expense' | 'checklist' | 'backup'>('expense');
 
+  // --- Confirm Modal State ---
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    isDangerous?: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
+
+
   // --- Currency State ---
   const [rate, setRate] = useState<number>(0.215);
   const [jpyInput, setJpyInput] = useState<string>('1000');
@@ -73,7 +90,18 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   // Initialize Checklist if empty
   useEffect(() => {
     if (checklist.length === 0) {
-      handleResetChecklist(false); // Init without confirm
+      // Direct init if empty, no confirm needed
+      const initialList: ChecklistCategory[] = DEFAULT_CATEGORIES.map(cat => ({
+        id: Math.random().toString(36).substr(2, 9),
+        title: cat.title,
+        items: cat.items.map(text => ({
+          id: Math.random().toString(36).substr(2, 9),
+          text,
+          checked: false
+        })),
+        isCollapsed: false
+      }));
+      onUpdateChecklist(initialList);
     }
   }, []);
 
@@ -88,7 +116,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
     if (activeTab !== 'currency' && rate !== 0.215) return; // Only fetch if needed or if using default
     setLoadingRate(true);
     try {
-      const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+      const res = await fetch(EXCHANGE_RATE_API_URL);
       const data = await res.json();
       const currentRate = data.rates.TWD;
       setRate(currentRate);
@@ -139,9 +167,16 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   };
 
   const handleClearExpenses = () => {
-    if (window.confirm("確定要清空所有記帳紀錄嗎？此動作無法復原。")) {
-      onUpdateExpenses([]);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "清空記帳",
+      message: "確定要清空所有記帳紀錄嗎？此動作無法復原。",
+      isDangerous: true,
+      onConfirm: () => {
+        onUpdateExpenses([]);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleSaveBudget = () => {
@@ -174,20 +209,27 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
 
   // --- CHECKLIST LOGIC ---
 
-  const handleResetChecklist = (confirm = true) => {
-    if (!confirm || window.confirm("確定要重置檢查清單嗎？這將會恢復為預設項目並清除自訂項目。")) {
-      const initialList: ChecklistCategory[] = DEFAULT_CATEGORIES.map(cat => ({
-        id: Math.random().toString(36).substr(2, 9),
-        title: cat.title,
-        items: cat.items.map(text => ({
+  const handleResetChecklist = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: "重置清單",
+      message: "確定要重置檢查清單嗎？這將會恢復為預設項目並清除自訂項目。",
+      isDangerous: true,
+      onConfirm: () => {
+        const initialList: ChecklistCategory[] = DEFAULT_CATEGORIES.map(cat => ({
           id: Math.random().toString(36).substr(2, 9),
-          text,
-          checked: false
-        })),
-        isCollapsed: false
-      }));
-      onUpdateChecklist(initialList);
-    }
+          title: cat.title,
+          items: cat.items.map(text => ({
+            id: Math.random().toString(36).substr(2, 9),
+            text,
+            checked: false
+          })),
+          isCollapsed: false
+        }));
+        onUpdateChecklist(initialList);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const toggleCategoryCollapse = (catId: string) => {
@@ -197,9 +239,16 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
   };
 
   const handleDeleteCategory = (catId: string) => {
-    if (window.confirm("確定要刪除這個分類嗎？")) {
-      onUpdateChecklist(checklist.filter(c => c.id !== catId));
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "刪除分類",
+      message: "確定要刪除這個分類嗎？",
+      isDangerous: true,
+      onConfirm: () => {
+        onUpdateChecklist(checklist.filter(c => c.id !== catId));
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleAddCategory = () => {
@@ -320,26 +369,44 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       throw new Error("無效的行程資料格式");
     }
 
-    if (window.confirm(`⚠️ 確定要匯入行程「${data.tripSettings.name}」嗎？\n\n您目前手機上的所有資料將會被覆蓋！`)) {
-      onUpdateTripSettings(data.tripSettings);
-      onUpdateItinerary(data.itineraryData);
-      if (data.expenses) onUpdateExpenses(data.expenses);
+    setConfirmModal({
+      isOpen: true,
+      title: "確認匯入",
+      message: `⚠️ 確定要匯入行程「${data.tripSettings.name}」嗎？\n\n您目前手機上的所有資料將會被覆蓋！`,
+      isDangerous: true,
+      onConfirm: () => {
+        onUpdateTripSettings(data.tripSettings);
+        onUpdateItinerary(data.itineraryData);
+        if (data.expenses) onUpdateExpenses(data.expenses);
 
-      if (data.checklist) {
-        const cl = data.checklist;
-        if (Array.isArray(cl) && cl.length > 0 && 'text' in cl[0]) {
-          onUpdateChecklist([{
-            id: 'imported-legacy', title: '匯入的清單', items: cl, isCollapsed: false
-          }]);
-        } else {
-          onUpdateChecklist(cl);
+        if (data.checklist) {
+          const cl = data.checklist;
+          if (Array.isArray(cl) && cl.length > 0 && 'text' in cl[0]) {
+            onUpdateChecklist([{
+              id: 'imported-legacy', title: '匯入的清單', items: cl, isCollapsed: false
+            }]);
+          } else {
+            onUpdateChecklist(cl);
+          }
         }
-      }
 
-      alert("匯入成功！");
-      setImportCode('');
-      onClose();
-    }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        // Show success message (reusing modal as info)
+        setTimeout(() => {
+          setConfirmModal({
+            isOpen: true,
+            title: "匯入成功",
+            message: "您的行程資料已成功匯入！",
+            isDangerous: false,
+            onConfirm: () => {
+              setConfirmModal(prev => ({ ...prev, isOpen: false }));
+              setImportCode('');
+              onClose();
+            }
+          });
+        }, 100);
+      }
+    });
   };
 
   const handleImportCode = () => {
@@ -353,7 +420,13 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
       const data = JSON.parse(jsonString);
       processImportData(data);
     } catch (e) {
-      alert("匯入失敗：無效的代碼");
+      setConfirmModal({
+        isOpen: true,
+        title: "匯入失敗",
+        message: "無效的代碼或格式錯誤。",
+        isDangerous: false,
+        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+      });
     }
   };
 
@@ -367,7 +440,13 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
         const data = JSON.parse(result);
         processImportData(data);
       } catch (err) {
-        alert("讀取檔案失敗：格式錯誤");
+        setConfirmModal({
+          isOpen: true,
+          title: "讀取失敗",
+          message: "檔案格式錯誤或損毀。",
+          isDangerous: false,
+          onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+        });
       }
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
@@ -383,6 +462,14 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-4 pt-16 sm:pt-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDangerous={confirmModal.isDangerous}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh]">
 
         {/* Header */}
@@ -653,7 +740,7 @@ const TravelToolbox: React.FC<TravelToolboxProps> = ({
                   </span>
                 </div>
                 <button
-                  onClick={() => handleResetChecklist(true)}
+                  onClick={handleResetChecklist}
                   className="text-xs font-bold text-gray-400 hover:text-japan-blue flex items-center gap-1"
                 >
                   <RefreshCw size={12} /> 重置
