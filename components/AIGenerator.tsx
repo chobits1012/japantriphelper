@@ -7,7 +7,7 @@ interface AIGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
   onGenerate: (data: ItineraryDay[], isFullReplace: boolean) => void;
-  existingDays: ItineraryDay[]; 
+  existingDays: ItineraryDay[];
   startDate: string; // New: Trip start date
   tripName: string;  // New: Trip name for context
 }
@@ -20,7 +20,7 @@ const ITINERARY_SCHEMA: Schema = {
       day: { type: Type.STRING, description: "Format: Day X" },
       date: { type: Type.STRING, description: "Format: MM/DD" },
       weekday: { type: Type.STRING, description: "Format: Mon, Tue..." },
-      title: { type: Type.STRING },
+      title: { type: Type.STRING, description: "Theme of the day OR 1-2 main highlights. MAX 10 chars." },
       desc: { type: Type.STRING, description: "Brief summary of locations only. Example: 'Loc A ➔ Loc B ➔ Loc C'" },
       pass: { type: Type.BOOLEAN, description: "Always set to false. User manually configures passes." },
       bg: { type: Type.STRING, description: "Unsplash Image URL relating to the location" },
@@ -67,8 +67,8 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const [targetDay, setTargetDay] = useState<string>('all'); 
+
+  const [targetDay, setTargetDay] = useState<string>('all');
 
   if (!isOpen) return null;
 
@@ -87,7 +87,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
 
     try {
       const ai = new GoogleGenAI({ apiKey: apiKey });
-      
+
       const isSingleDay = targetDay !== 'all';
       const selectedDayInfo = isSingleDay ? existingDays.find(d => d.day === targetDay) : null;
 
@@ -105,12 +105,17 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
            - ONLY list 3-4 main location names separated by arrows (➔).
            - DO NOT write full sentences or long descriptions here.
            - Example: "桃園機場 ➔ 關西機場 ➔ 京都" or "清水寺 ➔ 祇園 ➔ 鴨川"
-        2. 'events' (Detailed Itinerary):
+        3. 'title' field:
+           - MUST be very short. Max 10 characters.
+           - Use a Theme (e.g. "京都古都巡禮") or 1-2 Main Highlights (e.g. "清水寺與祇園").
+           - Do NOT list all locations.
+           - NO arrows (➔) or long dividers.
+        4. 'events' (Detailed Itinerary):
            - This is where you put the detailed descriptions and activities.
       `;
 
       if (isSingleDay && selectedDayInfo) {
-         systemPrompt += `
+        systemPrompt += `
            CRITICAL INSTRUCTION: You are ONLY modifying ${targetDay} (${selectedDayInfo.date}).
            Do NOT generate any other days.
            Return an array containing ONLY ONE object for ${targetDay}.
@@ -119,9 +124,9 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
            JR PASS Logic: Do NOT set "pass": true automatically. Set "pass": false.
          `;
       } else {
-         // Full Trip Generation Logic
-         const totalDays = existingDays.length;
-         systemPrompt += `
+        // Full Trip Generation Logic
+        const totalDays = existingDays.length;
+        systemPrompt += `
            CRITICAL INSTRUCTION: Generate the FULL itinerary for ${totalDays} days (Day 1 to Day ${totalDays}).
            The start date is ${startDate}. 
            Please calculate the correct date (MM/DD) and weekday for each day starting from ${startDate}.
@@ -150,14 +155,14 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
 
       if (response.text) {
         try {
-            const cleanedText = cleanJsonString(response.text);
-            const data = JSON.parse(cleanedText) as ItineraryDay[];
-            onGenerate(data, !isSingleDay);
-            onClose();
+          const cleanedText = cleanJsonString(response.text);
+          const data = JSON.parse(cleanedText) as ItineraryDay[];
+          onGenerate(data, !isSingleDay);
+          onClose();
         } catch (parseError) {
-            console.error("JSON Parse Error:", parseError);
-            console.log("Raw Text:", response.text);
-            throw new Error("AI 回傳格式錯誤，請再試一次。");
+          console.error("JSON Parse Error:", parseError);
+          console.log("Raw Text:", response.text);
+          throw new Error("AI 回傳格式錯誤，請再試一次。");
         }
       } else {
         throw new Error('No data returned');
@@ -173,7 +178,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-        
+
         {/* Header */}
         <div className="bg-japan-blue p-4 flex items-center justify-between text-white">
           <div className="flex items-center gap-2">
@@ -187,15 +192,15 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
 
         {/* Body */}
         <div className="p-6 space-y-6 overflow-y-auto">
-          
+
           {/* API Key Input */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <KeyRound size={16} />
               Google Gemini API Key
             </label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="貼上您的 API Key (AIza...)"
@@ -213,39 +218,39 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
               生成範圍
             </label>
             <div className="grid grid-cols-2 gap-2">
-               <button 
-                  onClick={() => setTargetDay('all')}
-                  className={`p-3 rounded-lg border text-sm font-bold flex items-center justify-center gap-2 transition-all ${targetDay === 'all' ? 'bg-japan-blue text-white border-japan-blue' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
-               >
-                  <CalendarRange size={16} />
-                  整趟旅程 ({existingDays.length} 天)
-               </button>
-               <select 
-                  value={targetDay}
-                  onChange={(e) => setTargetDay(e.target.value)}
-                  className={`p-3 rounded-lg border text-sm font-bold outline-none transition-all ${targetDay !== 'all' ? 'bg-japan-blue text-white border-japan-blue' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
-               >
-                  <option value="all" className="text-gray-800 bg-white">單日修改 (請選擇)...</option>
-                  {existingDays.map(day => (
-                    <option key={day.day} value={day.day} className="text-gray-800 bg-white">
-                      {day.day} ({day.date})
-                    </option>
-                  ))}
-               </select>
+              <button
+                onClick={() => setTargetDay('all')}
+                className={`p-3 rounded-lg border text-sm font-bold flex items-center justify-center gap-2 transition-all ${targetDay === 'all' ? 'bg-japan-blue text-white border-japan-blue' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
+              >
+                <CalendarRange size={16} />
+                整趟旅程 ({existingDays.length} 天)
+              </button>
+              <select
+                value={targetDay}
+                onChange={(e) => setTargetDay(e.target.value)}
+                className={`p-3 rounded-lg border text-sm font-bold outline-none transition-all ${targetDay !== 'all' ? 'bg-japan-blue text-white border-japan-blue' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
+              >
+                <option value="all" className="text-gray-800 bg-white">單日修改 (請選擇)...</option>
+                {existingDays.map(day => (
+                  <option key={day.day} value={day.day} className="text-gray-800 bg-white">
+                    {day.day} ({day.date})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           {/* Prompt Input */}
           <div className="space-y-2">
-             <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Send size={16} />
               {targetDay === 'all' ? `規劃 "${tripName}" (${startDate} 出發)` : `告訴 AI ${targetDay} 想去哪裡`}
             </label>
-            <textarea 
+            <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={targetDay === 'all' 
-                ? "例如：我要去東京五天四夜。第一天去淺草雷門，第二天去迪士尼，第三天去新宿購物..." 
+              placeholder={targetDay === 'all'
+                ? "例如：我要去東京五天四夜。第一天去淺草雷門，第二天去迪士尼，第三天去新宿購物..."
                 : "例如：早上我想去吃著名的鬆餅，下午去逛古著店，晚上要吃燒肉。"}
               className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-japan-blue focus:border-transparent outline-none transition-all h-32 resize-none text-sm leading-relaxed bg-white dark:bg-slate-800 dark:text-white"
             />
@@ -262,7 +267,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-end">
-          <button 
+          <button
             onClick={handleGenerate}
             disabled={loading}
             className={`
