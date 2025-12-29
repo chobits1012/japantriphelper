@@ -196,11 +196,11 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                                             <p className="text-xs text-gray-500 dark:text-slate-400">出國必備行李檢查表，支援自訂分類與進度條。</p>
                                         </div>
                                     </div>
-                                    <div className="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg flex items-start gap-3">
+                                    <div className="bg-white/50 dark:bg-slate-800/50 p-3 rounded-lg flex items-start gap-3 border border-white/40 dark:border-white/10 shadow-sm backdrop-blur-sm">
                                         <Save className="text-gray-500 shrink-0" size={20} />
                                         <div>
                                             <h4 className="font-bold text-sm mb-1">備份 (Backup)</h4>
-                                            <p className="text-xs text-gray-500 dark:text-slate-400">匯出/匯入行程代碼，方便備份或分享給旅伴。</p>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">支援「複製代碼」或「下載檔案」將行程存檔，換手機也能輕鬆匯入。</p>
                                         </div>
                                     </div>
                                 </div>
