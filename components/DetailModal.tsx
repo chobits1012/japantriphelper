@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Home, Cloud, Sun, CloudRain, Snowflake, BedDouble, Lightbulb, ChevronLeft, ChevronRight,
-  ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon, Search, MapPin, LayoutList, Coffee, Camera, Utensils, ShoppingBag, Plane
+  ExternalLink, Pencil, Save, X, Plus, Trash2, Loader2, Train, CheckCircle2, Eraser, Map as MapIcon, Search, MapPin, LayoutList, Coffee, Camera, Utensils, ShoppingBag, Plane, Layers
 } from 'lucide-react';
 import type { ItineraryDay, ItineraryEvent, TripSeason } from '../types';
 import TimelineEvent from './TimelineEvent';
 import ConfirmModal from './ConfirmModal';
-import PassManager from './PassManager'; 
+import PassManager from './PassManager';
 import { SeasonBackground } from './SeasonBackground'; // Correctly using Named Import
 
 interface DetailPanelProps {
@@ -97,6 +97,61 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdat
     fetchWeather();
   }, [day]);
 
+  // --- Multi-Plan Logic ---
+  const currentPlanId = editData.activePlanId || 'A';
+  const PLANS = ['A', 'B', 'C'];
+
+  const handleSwitchPlan = (targetPlanId: string) => {
+    if (targetPlanId === currentPlanId) return;
+
+    // Save current events AND title/desc to the outgoing plan storage
+    const updatedSubPlans = { ...(editData.subPlans || {}) };
+    updatedSubPlans[currentPlanId] = {
+      events: editData.events,
+      title: editData.title,
+      desc: editData.desc
+    };
+
+    // Load target events, title, and desc
+    const targetSubPlan = updatedSubPlans[targetPlanId];
+    const targetEvents = targetSubPlan?.events || [];
+    const targetTitle = targetSubPlan?.title !== undefined ? targetSubPlan.title : day.title;
+    const targetDesc = targetSubPlan?.desc !== undefined ? targetSubPlan.desc : day.desc;
+
+    const newData = {
+      ...editData,
+      subPlans: updatedSubPlans,
+      activePlanId: targetPlanId,
+      events: targetEvents,
+      title: targetTitle,
+      desc: targetDesc
+    };
+
+    setEditData(newData);
+
+    // If in View Mode, persist the change immediately
+    if (!isEditing) {
+      onUpdate(newData);
+    }
+
+    setEditingEventIndex(null);
+  };
+
+  const handleClearPlan = () => {
+    if (confirm('確定要清空目前方案的所有行程嗎？此動作無法復原。')) {
+      const updatedSubPlans = { ...(editData.subPlans || {}) };
+      updatedSubPlans[currentPlanId] = { events: [] };
+
+      setEditData({
+        ...editData,
+        subPlans: updatedSubPlans,
+        events: []
+      });
+      setEditingEventIndex(null);
+    }
+  };
+  // ------------------------
+
   const handleSaveText = () => {
     const sortedEvents = [...editData.events].sort((a, b) => a.time.localeCompare(b.time));
     const currentDayUpdate = { ...editData, events: sortedEvents };
@@ -158,16 +213,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdat
       const updates: ItineraryDay[] = [];
       const startIndex = allDays.findIndex(d => d.day === day.day);
       if (startIndex !== -1) {
-         const targetDay = allDays[startIndex];
-         updates.push({
-            ...targetDay,
-            pass: false,
-            passName: undefined,
-            passColor: undefined,
-            passDurationDays: undefined,
-         });
-         onUpdate(updates);
-         setIsEditing(false);
+        const targetDay = allDays[startIndex];
+        updates.push({
+          ...targetDay,
+          pass: false,
+          passName: undefined,
+          passColor: undefined,
+          passDurationDays: undefined,
+        });
+        onUpdate(updates);
+        setIsEditing(false);
       }
     }
     setConfirmState({ isOpen: false, type: null });
@@ -182,7 +237,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdat
 
   return (
     <div key={key} className={`h-full w-full flex flex-col bg-white dark:bg-slate-950 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 pt-[env(safe-area-inset-top)] transition-colors duration-1000 ${className || ''}`}>
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={confirmState.isOpen}
         title={confirmState.type === 'deleteEvent' ? "刪除行程" : "移除票券"}
         message={confirmState.type === 'deleteEvent' ? "確定要刪除此行程嗎？" : `確定要移除當天的交通票券設定嗎？`}
@@ -245,24 +300,53 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdat
         {isEditing ? (
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* New PassManager Component */}
-            <PassManager 
-              day={day} 
-              allDays={allDays} 
+            <PassManager
+              day={day}
+              allDays={allDays}
               onUpdate={(updates) => { onUpdate(updates); setIsEditing(false); }}
               onRequestRemove={() => setConfirmState({ isOpen: true, type: 'removePass' })}
             />
 
             {/* Header Edit */}
             <div className="space-y-4 border-b border-gray-100 pb-6 dark:border-slate-800">
-              <div className="flex flex-col gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase block mb-1">標題</label>
-                  <input type="text" value={editData.title} onChange={e => setEditData({ ...editData, title: e.target.value })} className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-2 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500 rounded-none" />
+              {/* Title with Plan Switcher */}
+              <div>
+                <div className="flex items-center gap-4 mb-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase">標題</label>
+                  {/* Compact Plan Switcher */}
+                  <div className="flex items-center gap-0.5">
+                    <div className="flex gap-0.5 bg-gray-100 dark:bg-slate-700 px-1 py-0.5 rounded-full">
+                      {PLANS.map(plan => {
+                        const isActive = currentPlanId === plan;
+                        const hasContent = plan === currentPlanId ? editData.events.length > 0 : (editData.subPlans?.[plan]?.events.length || 0) > 0;
+                        return (
+                          <button
+                            key={plan}
+                            onClick={() => handleSwitchPlan(plan)}
+                            className={`w-5 h-5 rounded-full text-[9px] font-bold transition-all flex items-center justify-center ${isActive ? 'bg-white dark:bg-slate-600 text-japan-blue dark:text-sky-400 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-slate-300'}`}
+                          >
+                            {plan}
+                          </button>
+                        );
+                      })}
+                      {editData.events.length > 0 && (
+                        <button
+                          onClick={handleClearPlan}
+                          className="w-5 h-5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center"
+                          title={`清空方案 ${currentPlanId}`}
+                        >
+                          <Trash2 size={10} />
+                        </button>
+                      )}
+                    </div>
+                    <span className="text-[9px] text-gray-300 dark:text-slate-600 font-medium ml-1">方案</span>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase block mb-1">地點 (影響天氣)</label>
-                  <input type="text" value={editData.location} onChange={e => setEditData({ ...editData, location: e.target.value })} className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-2 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500 rounded-none" placeholder="例如: 東京" />
-                </div>
+                <input type="text" value={editData.title} onChange={e => setEditData({ ...editData, title: e.target.value })} className="w-full text-xl font-serif font-bold text-ink border-b-2 border-gray-200 focus:border-japan-blue outline-none py-2 bg-transparent dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:focus:border-sky-500 rounded-none" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase block mb-1">地點 (影響天氣)</label>
+                <input type="text" value={editData.location} onChange={e => setEditData({ ...editData, location: e.target.value })} className="w-full text-lg font-bold text-japan-blue border-b-2 border-gray-200 focus:border-japan-blue outline-none py-2 bg-transparent dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 dark:focus:border-sky-500 rounded-none" placeholder="例如: 東京" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase block mb-1">描述</label>
@@ -282,60 +366,60 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdat
 
               <div className="space-y-3">
                 {editData.events.map((event, index) => {
-                   const isFocused = editingEventIndex === index;
-                   if (isFocused) {
-                      return (
-                        <div key={index} className="flex flex-col gap-3 bg-white shadow-md p-4 rounded-xl border-l-4 border-japan-blue relative animate-in zoom-in-95 duration-200 dark:bg-slate-800 dark:border-sky-500">
-                           <div className="flex justify-between items-center mb-1">
-                              <span className="text-xs font-bold text-japan-blue dark:text-sky-400 uppercase">Editing Event #{index + 1}</span>
-                              <div className="flex gap-2">
-                                <button onClick={() => setEditingEventIndex(null)} className="text-gray-400 hover:text-green-600 p-2" title="完成編輯"><CheckCircle2 size={24} /></button>
-                                <button onClick={() => requestRemoveEvent(index)} className="text-gray-400 hover:text-red-500 p-2" title="刪除"><Trash2 size={24} /></button>
-                              </div>
-                           </div>
-                           <div className="flex gap-2">
-                              <div className="w-1/3">
-                                <label className="text-[10px] font-bold text-gray-400 block mb-1">時間 (24h)</label>
-                                <input type="time" value={event.time} onChange={e => handleEventChange(index, 'time', e.target.value)} className="w-full p-3 text-base font-bold border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue" />
-                              </div>
-                              <div className="w-2/3">
-                                <label className="text-[10px] font-bold text-gray-400 block mb-1">類別</label>
-                                <select value={event.category || 'sightseeing'} onChange={e => handleEventChange(index, 'category', e.target.value)} className="w-full p-3 text-base border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue appearance-none">
-                                  <option value="sightseeing">景點</option><option value="food">美食</option><option value="shopping">購物</option><option value="transport">交通</option><option value="hotel">住宿</option><option value="flight">航班</option><option value="activity">體驗</option>
-                                </select>
-                              </div>
-                           </div>
-                           <div><label className="text-[10px] font-bold text-gray-400 block mb-1">標題</label><input type="text" value={event.title} onChange={e => handleEventChange(index, 'title', e.target.value)} className="w-full p-3 font-bold border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue text-base" /></div>
-                           <div><label className="text-[10px] font-bold text-gray-400 block mb-1">地圖關鍵字</label><div className="flex items-center gap-2 border rounded-lg bg-gray-50 dark:bg-slate-900 dark:border-slate-600 px-3 py-1"><MapPin size={16} className="text-gray-400 flex-shrink-0" /><input type="text" value={event.mapQuery || ''} onChange={e => handleEventChange(index, 'mapQuery', e.target.value)} className="w-full p-2 text-base bg-transparent dark:text-white focus:outline-none" placeholder="例如: 清水寺" /></div></div>
-                           <div><label className="text-[10px] font-bold text-gray-400 block mb-1">備註</label><textarea value={event.desc} onChange={e => handleEventChange(index, 'desc', e.target.value)} className="w-full p-3 text-base border rounded-lg h-24 resize-none bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue" /></div>
+                  const isFocused = editingEventIndex === index;
+                  if (isFocused) {
+                    return (
+                      <div key={index} className="flex flex-col gap-3 bg-white shadow-md p-4 rounded-xl border-l-4 border-japan-blue relative animate-in zoom-in-95 duration-200 dark:bg-slate-800 dark:border-sky-500">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-bold text-japan-blue dark:text-sky-400 uppercase">Editing Event #{index + 1}</span>
+                          <div className="flex gap-2">
+                            <button onClick={() => setEditingEventIndex(null)} className="text-gray-400 hover:text-green-600 p-2" title="完成編輯"><CheckCircle2 size={24} /></button>
+                            <button onClick={() => requestRemoveEvent(index)} className="text-gray-400 hover:text-red-500 p-2" title="刪除"><Trash2 size={24} /></button>
+                          </div>
                         </div>
-                      );
-                   } else {
-                      return (
-                        <div key={index} onClick={() => setEditingEventIndex(index)} className="flex items-center gap-3 bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100 p-4 rounded-xl cursor-pointer transition-all group dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800">
-                           <div className="text-sm font-bold text-gray-400 w-12 flex-shrink-0 dark:text-slate-500">{event.time}</div>
-                           <div className="flex-1 min-w-0"><h4 className="font-bold text-base text-ink truncate dark:text-slate-200">{event.title}</h4><p className="text-xs text-gray-500 truncate dark:text-slate-400">{event.desc}</p></div>
-                           <div className="text-gray-300 group-hover:text-japan-blue dark:group-hover:text-sky-400 transition-colors p-2"><Pencil size={18} /></div>
+                        <div className="flex gap-2">
+                          <div className="w-1/3">
+                            <label className="text-[10px] font-bold text-gray-400 block mb-1">時間 (24h)</label>
+                            <input type="time" value={event.time} onChange={e => handleEventChange(index, 'time', e.target.value)} className="w-full p-3 text-base font-bold border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue" />
+                          </div>
+                          <div className="w-2/3">
+                            <label className="text-[10px] font-bold text-gray-400 block mb-1">類別</label>
+                            <select value={event.category || 'sightseeing'} onChange={e => handleEventChange(index, 'category', e.target.value)} className="w-full p-3 text-base border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue appearance-none">
+                              <option value="sightseeing">景點</option><option value="food">美食</option><option value="shopping">購物</option><option value="transport">交通</option><option value="hotel">住宿</option><option value="flight">航班</option><option value="activity">體驗</option>
+                            </select>
+                          </div>
                         </div>
-                      );
-                   }
+                        <div><label className="text-[10px] font-bold text-gray-400 block mb-1">標題</label><input type="text" value={event.title} onChange={e => handleEventChange(index, 'title', e.target.value)} className="w-full p-3 font-bold border rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue text-base" /></div>
+                        <div><label className="text-[10px] font-bold text-gray-400 block mb-1">地圖關鍵字</label><div className="flex items-center gap-2 border rounded-lg bg-gray-50 dark:bg-slate-900 dark:border-slate-600 px-3 py-1"><MapPin size={16} className="text-gray-400 flex-shrink-0" /><input type="text" value={event.mapQuery || ''} onChange={e => handleEventChange(index, 'mapQuery', e.target.value)} className="w-full p-2 text-base bg-transparent dark:text-white focus:outline-none" placeholder="例如: 清水寺" /></div></div>
+                        <div><label className="text-[10px] font-bold text-gray-400 block mb-1">備註</label><textarea value={event.desc} onChange={e => handleEventChange(index, 'desc', e.target.value)} className="w-full p-3 text-base border rounded-lg h-24 resize-none bg-gray-50 dark:bg-slate-900 dark:text-white dark:border-slate-600 focus:outline-none focus:border-japan-blue" /></div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={index} onClick={() => setEditingEventIndex(index)} className="flex items-center gap-3 bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100 p-4 rounded-xl cursor-pointer transition-all group dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800">
+                        <div className="text-sm font-bold text-gray-400 w-12 flex-shrink-0 dark:text-slate-500">{event.time}</div>
+                        <div className="flex-1 min-w-0"><h4 className="font-bold text-base text-ink truncate dark:text-slate-200">{event.title}</h4><p className="text-xs text-gray-500 truncate dark:text-slate-400">{event.desc}</p></div>
+                        <div className="text-gray-300 group-hover:text-japan-blue dark:group-hover:text-sky-400 transition-colors p-2"><Pencil size={18} /></div>
+                      </div>
+                    );
+                  }
                 })}
                 {/* Empty State / Prompt */}
                 {editData.events.length === 0 && (
-                   <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-900/50">
-                      <div className="relative w-24 h-24 mx-auto mb-4 opacity-50">
-                         <div className="absolute top-0 left-4 text-japan-blue dark:text-sky-500 animate-bounce" style={{ animationDelay: '0s' }}><Plane size={32} /></div>
-                         <div className="absolute top-8 right-2 text-orange-400 animate-bounce" style={{ animationDelay: '0.2s' }}><Camera size={28} /></div>
-                         <div className="absolute bottom-0 left-8 text-gray-400 dark:text-slate-500"><LayoutList size={40} /></div>
-                      </div>
-                      <p className="text-sm font-bold mb-6">這天還沒有安排行程，想要做什麼呢？</p>
-                      <div className="flex flex-wrap justify-center gap-2 px-4">
-                         <button onClick={() => handleQuickAdd({ title: '早餐', time: '08:00', category: 'food' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-orange-300 hover:text-orange-500 transition-colors shadow-sm"><Coffee size={14} /> 早餐</button>
-                         <button onClick={() => handleQuickAdd({ title: '景點觀光', time: '10:00', category: 'sightseeing' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-blue-300 hover:text-blue-500 transition-colors shadow-sm"><Camera size={14} /> 景點</button>
-                         <button onClick={() => handleQuickAdd({ title: '午餐', time: '12:00', category: 'food' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-orange-300 hover:text-orange-500 transition-colors shadow-sm"><Utensils size={14} /> 午餐</button>
-                         <button onClick={() => handleQuickAdd({ title: '購物行程', time: '15:00', category: 'shopping' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-purple-300 hover:text-purple-500 transition-colors shadow-sm"><ShoppingBag size={14} /> 購物</button>
-                      </div>
-                   </div>
+                  <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-900/50">
+                    <div className="relative w-24 h-24 mx-auto mb-4 opacity-50">
+                      <div className="absolute top-0 left-4 text-japan-blue dark:text-sky-500 animate-bounce" style={{ animationDelay: '0s' }}><Plane size={32} /></div>
+                      <div className="absolute top-8 right-2 text-orange-400 animate-bounce" style={{ animationDelay: '0.2s' }}><Camera size={28} /></div>
+                      <div className="absolute bottom-0 left-8 text-gray-400 dark:text-slate-500"><LayoutList size={40} /></div>
+                    </div>
+                    <p className="text-sm font-bold mb-6">這天還沒有安排行程，想要做什麼呢？</p>
+                    <div className="flex flex-wrap justify-center gap-2 px-4">
+                      <button onClick={() => handleQuickAdd({ title: '早餐', time: '08:00', category: 'food' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-orange-300 hover:text-orange-500 transition-colors shadow-sm"><Coffee size={14} /> 早餐</button>
+                      <button onClick={() => handleQuickAdd({ title: '景點觀光', time: '10:00', category: 'sightseeing' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-blue-300 hover:text-blue-500 transition-colors shadow-sm"><Camera size={14} /> 景點</button>
+                      <button onClick={() => handleQuickAdd({ title: '午餐', time: '12:00', category: 'food' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-orange-300 hover:text-orange-500 transition-colors shadow-sm"><Utensils size={14} /> 午餐</button>
+                      <button onClick={() => handleQuickAdd({ title: '購物行程', time: '15:00', category: 'shopping' })} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:border-purple-300 hover:text-purple-500 transition-colors shadow-sm"><ShoppingBag size={14} /> 購物</button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -354,7 +438,29 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ day, allDays, season, onUpdat
         ) : (
           /* VIEW MODE CONTENT */
           <>
+            {/* Title Section with Plan Switcher */}
             <div className="max-w-3xl mx-auto mb-10 border-b border-japan-blue/10 pb-6 dark:border-sky-500/10">
+              {/* Plan Switcher - Subtle pill above title */}
+              <div className="flex items-center gap-0.5 mb-3">
+                <div className="flex gap-0.5 bg-gray-100/80 dark:bg-slate-800/80 px-1 py-0.5 rounded-full">
+                  {PLANS.map(plan => {
+                    const isActive = currentPlanId === plan;
+                    const hasContent = plan === currentPlanId ? editData.events.length > 0 : (editData.subPlans?.[plan]?.events.length || 0) > 0;
+                    return (
+                      <button
+                        key={plan}
+                        onClick={() => handleSwitchPlan(plan)}
+                        className={`w-5 h-5 rounded-full text-[9px] font-bold transition-all flex items-center justify-center ${isActive ? 'bg-white dark:bg-slate-600 text-japan-blue dark:text-sky-400 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-slate-300'}`}
+                      >
+                        {plan}
+                        {hasContent && !isActive && <span className="absolute w-1 h-1 bg-blue-400 rounded-full -top-0.5 -right-0.5" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-[9px] text-gray-300 dark:text-slate-600 font-medium ml-1">方案</span>
+              </div>
+
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-ink mb-4 leading-tight dark:text-slate-100">{day.title}</h2>
               <p className="text-base md:text-lg text-gray-700 font-medium leading-relaxed bg-white/40 p-3 rounded-lg backdrop-blur-sm border border-white/40 dark:bg-slate-800/40 dark:border-slate-700/40 dark:text-slate-300">{day.desc}</p>
             </div>

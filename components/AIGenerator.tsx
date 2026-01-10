@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Loader2, KeyRound, Send, CalendarRange, Calendar, ExternalLink, ChevronDown, ChevronUp, Save, HelpCircle } from 'lucide-react';
+import { X, Sparkles, Loader2, KeyRound, Send, CalendarRange, Calendar, ExternalLink, ChevronDown, ChevronUp, Save, HelpCircle, Layers } from 'lucide-react';
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { ItineraryDay } from '../types';
 
@@ -8,7 +8,7 @@ const API_KEY_STORAGE_KEY = 'japantriphelper_gemini_api_key';
 interface AIGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate: (data: ItineraryDay[], isFullReplace: boolean) => void;
+  onGenerate: (data: ItineraryDay[], isFullReplace: boolean, targetPlan?: string) => void;
   existingDays: ItineraryDay[];
   startDate: string; // New: Trip start date
   tripName: string;  // New: Trip name for context
@@ -73,6 +73,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
   const [showHelp, setShowHelp] = useState(false);
 
   const [targetDay, setTargetDay] = useState<string>('all');
+  const [targetPlan, setTargetPlan] = useState<string>('B'); // Default to Plan B for safety
 
   // Load saved API key from localStorage on mount
   useEffect(() => {
@@ -187,7 +188,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
         try {
           const cleanedText = cleanJsonString(response.text);
           const data = JSON.parse(cleanedText) as ItineraryDay[];
-          onGenerate(data, !isSingleDay);
+          onGenerate(data, !isSingleDay, isSingleDay ? targetPlan : undefined);
           onClose();
         } catch (parseError) {
           console.error("JSON Parse Error:", parseError);
@@ -331,6 +332,30 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
               </select>
             </div>
           </div>
+
+          {/* Target Plan Selection - Only shown for single day */}
+          {targetDay !== 'all' && (
+            <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-800 rounded-xl border border-blue-100 dark:border-slate-700 space-y-2 animate-in fade-in duration-200">
+              <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Layers size={16} className="text-blue-500" />
+                存入哪個方案？
+              </label>
+              <div className="flex gap-2">
+                {['A', 'B', 'C'].map(plan => (
+                  <button
+                    key={plan}
+                    onClick={() => setTargetPlan(plan)}
+                    className={`flex-1 py-2 rounded-lg font-bold transition-all ${targetPlan === plan ? 'bg-japan-blue text-white dark:bg-sky-600' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600'}`}
+                  >
+                    方案 {plan}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                💡 預設存入 B，避免覆蓋現有行程
+              </p>
+            </div>
+          )}
 
           {/* Prompt Input */}
           <div className="space-y-2">

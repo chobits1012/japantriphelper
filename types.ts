@@ -56,6 +56,16 @@ export interface ItineraryDay {
   accommodation?: Accommodation;
 
   events: ItineraryEvent[];
+
+  // Multi-Plan Support (A/B/C)
+  subPlans?: {
+    [key: string]: {
+      events: ItineraryEvent[];
+      title?: string;
+      desc?: string;
+    }
+  };
+  activePlanId?: string; // 'A', 'B', 'C', default 'A'
 }
 
 export interface ExpenseItem {

@@ -145,10 +145,29 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                                 <div className="bg-purple-50/50 dark:bg-purple-900/10 p-4 rounded-lg text-sm text-gray-900 dark:text-slate-200 space-y-3 border border-purple-100/40 dark:border-white/5 backdrop-blur-md shadow-lg">
                                     <p>不知道行程怎麼排？讓 AI 來幫您！點擊下方的 <span className="font-bold text-purple-700 dark:text-purple-300">AI 排程</span> 按鈕。</p>
                                     <ol className="list-decimal list-inside space-y-2">
-                                        <li><span className="font-bold">整趟旅程生成：</span>適合從零開始。告訴 AI 您想去的城市與喜好 (如：古蹟、動漫)。</li>
-                                        <li><span className="font-bold">單日行程修改：</span>針對某一天重新生成。例如：「Day 3 下雨，請幫我改成室內購物行程」。</li>
+                                        <li><span className="font-bold">整趟旅程生成：</span>適合從零開始。告訴 AI 您想去的城市與喜好。</li>
+                                        <li><span className="font-bold">單日行程修改：</span>針對某一天重新生成，可選擇存入方案 A/B/C。</li>
                                     </ol>
-                                    <p className="text-xs text-purple-700 dark:text-purple-300 font-bold px-2 py-1 bg-white/60 dark:bg-white/10 rounded inline-block shadow-sm backdrop-blur-sm">💡 需自備 Google Gemini API Key</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="text-xs text-purple-700 dark:text-purple-300 font-bold px-2 py-1 bg-white/60 dark:bg-white/10 rounded shadow-sm backdrop-blur-sm">💡 API Key 可儲存到瀏覽器</span>
+                                        <span className="text-xs text-purple-700 dark:text-purple-300 font-bold px-2 py-1 bg-white/60 dark:bg-white/10 rounded shadow-sm backdrop-blur-sm">✨ 支援多方案比較</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Multi-Plan */}
+                            <section>
+                                <div className="flex items-center gap-2 mb-3 border-b border-white/30 dark:border-white/10 pb-2">
+                                    <Calendar size={20} className="text-blue-500 drop-shadow-sm" />
+                                    <h3 className="font-bold text-lg text-gray-900 dark:text-slate-100 drop-shadow-sm">多方案規劃 (A/B/C)</h3>
+                                </div>
+                                <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg text-sm text-gray-900 dark:text-slate-200 space-y-2 border border-blue-100/40 dark:border-white/5 backdrop-blur-md shadow-lg">
+                                    <p>規劃行程時常有多個選項？現在可以輕鬆比較！</p>
+                                    <ul className="list-disc list-inside space-y-1 text-xs">
+                                        <li>在每日詳情頁面，標題旁會看到 <span className="font-bold">A B C 方案</span> 按鈕</li>
+                                        <li>點擊切換，每個方案的行程內容獨立儲存</li>
+                                        <li>用 AI 生成備案時，可選擇存入 B 或 C 方案</li>
+                                    </ul>
                                 </div>
                             </section>
 
