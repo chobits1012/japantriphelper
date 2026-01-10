@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Loader2, KeyRound, Send, CalendarRange, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Sparkles, Loader2, KeyRound, Send, CalendarRange, Calendar, ExternalLink, ChevronDown, ChevronUp, Save, HelpCircle } from 'lucide-react';
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { ItineraryDay } from '../types';
+
+const API_KEY_STORAGE_KEY = 'japantriphelper_gemini_api_key';
 
 interface AIGeneratorProps {
   isOpen: boolean;
@@ -67,8 +69,36 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [saveApiKey, setSaveApiKey] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const [targetDay, setTargetDay] = useState<string>('all');
+
+  // Load saved API key from localStorage on mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+    if (savedKey) {
+      setApiKey(savedKey);
+      setSaveApiKey(true);
+    }
+  }, []);
+
+  // Save or remove API key based on checkbox
+  const handleApiKeyChange = (newKey: string) => {
+    setApiKey(newKey);
+    if (saveApiKey && newKey) {
+      localStorage.setItem(API_KEY_STORAGE_KEY, newKey);
+    }
+  };
+
+  const handleSaveToggle = (checked: boolean) => {
+    setSaveApiKey(checked);
+    if (checked && apiKey) {
+      localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+    } else {
+      localStorage.removeItem(API_KEY_STORAGE_KEY);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -180,7 +210,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
-        <div className="bg-japan-blue p-4 flex items-center justify-between text-white">
+        <div className="bg-japan-blue p-4 flex items-center justify-between text-white flex-shrink-0">
           <div className="flex items-center gap-2">
             <Sparkles size={20} className="text-yellow-300" />
             <h3 className="font-serif font-bold text-lg tracking-wide">AI 旅遊規劃師</h3>
@@ -191,24 +221,86 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
 
           {/* API Key Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <KeyRound size={16} />
-              Google Gemini API Key
-            </label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <KeyRound size={16} />
+                Google Gemini API Key
+              </label>
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full hover:from-blue-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg hover:scale-105"
+              >
+                <ExternalLink size={12} />
+                免費申請 API Key
+              </a>
+            </div>
+
             <input
               type="password"
               value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              onChange={(e) => handleApiKeyChange(e.target.value)}
               placeholder="貼上您的 API Key (AIza...)"
               className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-japan-blue focus:border-transparent outline-none transition-all text-sm font-mono bg-white dark:bg-slate-800 dark:text-white"
             />
-            <p className="text-xs text-gray-400">
-              * Key 僅用於本次生成，不會被儲存。請至 Google AI Studio 免費申請。
-            </p>
+
+            {/* Save API Key Checkbox */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="save-api-key"
+                checked={saveApiKey}
+                onChange={(e) => handleSaveToggle(e.target.checked)}
+                className="w-4 h-4 text-japan-blue bg-gray-100 border-gray-300 rounded focus:ring-japan-blue focus:ring-2"
+              />
+              <label htmlFor="save-api-key" className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                <Save size={12} />
+                儲存 API Key 到瀏覽器（下次自動填入）
+              </label>
+            </div>
+
+            {/* Expandable Help Section */}
+            <div className="border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowHelp(!showHelp)}
+                className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-left"
+              >
+                <span className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <HelpCircle size={16} className="text-blue-500" />
+                  如何複製 API Key？
+                </span>
+                {showHelp ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+
+              {showHelp && (
+                <div className="p-4 bg-white dark:bg-slate-900 space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li>點擊上方「<strong className="text-blue-500">免費申請 API Key</strong>」按鈕並登入 Google</li>
+                    <li>找到已生成的 API Key，點擊複製按鈕（如下圖紅圈處）</li>
+                    <li>回到這裡貼上即可！</li>
+                  </ol>
+
+                  {/* Help Image */}
+                  <img
+                    src="/api-key-help.png"
+                    alt="API Key 申請步驟說明"
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-700 mt-3"
+                  />
+
+                  <div className="pt-2 border-t border-gray-100 dark:border-slate-700">
+                    <p className="text-xs text-gray-400">
+                      💡 提示：API Key 完全免費，每分鐘可使用 15 次。
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mode Selection */}
@@ -266,7 +358,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ isOpen, onClose, onGenerate, 
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-end">
+        <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-end flex-shrink-0">
           <button
             onClick={handleGenerate}
             disabled={loading}
