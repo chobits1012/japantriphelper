@@ -150,23 +150,23 @@ const App: React.FC = () => {
 
       {/* ✨ 一次性更新提示 Toast */}
       {showUpdateToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-500">
+        <div className="fixed top-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-500">
           <div
             onClick={dismissToast}
-            className="flex items-center gap-3 px-5 py-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 dark:border-white/10 cursor-pointer hover:scale-[1.02] transition-transform group max-w-sm"
+            className="flex items-center gap-4 px-5 py-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-transform group md:max-w-sm"
           >
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-              <Camera size={18} className="text-white" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Camera size={20} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
                 新功能上線 🎉
               </p>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">
-                現在可以更換旅程封面圖片囉！將滑鼠移到卡片圖片即可更換。
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">
+                現在可以自訂旅程封面圖片囉！在首頁卡片的圖片區域即可更換。
               </p>
             </div>
-            <X size={16} className="text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
+            <X size={18} className="text-gray-400 flex-shrink-0" />
           </div>
         </div>
       )}
