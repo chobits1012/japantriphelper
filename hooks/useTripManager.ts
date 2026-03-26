@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import useLocalStorage from './useLocalStorage';
 import type { TripMetadata, TripSeason, ItineraryDay } from '../types';
 import { ITINERARY_DATA } from '../constants';
+import { deleteImage } from '../services/imageStore';
 
 const TRIPS_LIST_KEY = 'my-trips-list';
 
@@ -163,11 +164,14 @@ export const useTripManager = () => {
   const deleteTrip = (id: string) => {
     setTrips(prev => prev.filter(t => t.id !== id));
     
-    // Cleanup keys
+    // Cleanup localStorage keys
     localStorage.removeItem(`trip-${id}-settings`);
     localStorage.removeItem(`trip-${id}-itinerary`);
     localStorage.removeItem(`trip-${id}-expenses`);
     localStorage.removeItem(`trip-${id}-checklist`);
+
+    // Cleanup IndexedDB cover image
+    deleteImage(id).catch(err => console.warn('清除封面圖片失敗:', err));
   };
 
   const updateTripMeta = (id: string, updates: Partial<TripMetadata>) => {

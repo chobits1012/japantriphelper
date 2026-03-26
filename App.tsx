@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Map, Calendar, ChevronRight, Copy, Plane, Sparkles, BookOpen } from 'lucide-react';
 import { WASHI_PATTERN, HERO_IMAGE } from './constants';
 import { useTripManager } from './hooks/useTripManager';
 import TripView from './components/TripView';
 import TripSetup from './components/TripSetup';
 import HelpModal from './components/HelpModal';
+import ImagePicker from './components/ImagePicker';
+import { saveImage, getImageUrl } from './services/imageStore';
 import type { TripSeason } from './types';
 
 const App: React.FC = () => {
@@ -12,6 +14,69 @@ const App: React.FC = () => {
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  // 自訂封面圖片快取：tripId -> Object URL
+  const [customCovers, setCustomCovers] = useState<Record<string, string>>({});
+  const customCoversRef = useRef(customCovers);
+  customCoversRef.current = customCovers;
+
+  // 防止換封面操作時觸發卡片導航
+  const isPickingImage = useRef(false);
+
+  // 頁面載入時從 IndexedDB 讀取所有旅程的自訂封面
+  useEffect(() => {
+    if (selectedTripId) return; // 在旅程內頁時不載入
+    let cancelled = false;
+
+    const loadCovers = async () => {
+      const covers: Record<string, string> = {};
+      for (const trip of trips) {
+        const url = await getImageUrl(trip.id);
+        if (url && !cancelled) {
+          covers[trip.id] = url;
+        }
+      }
+      if (!cancelled) {
+        setCustomCovers(covers);
+      }
+    };
+
+    loadCovers();
+
+    return () => {
+      cancelled = true;
+      // 釋放 Object URL 避免記憶體洩漏
+      const urls = customCoversRef.current;
+      Object.values(urls).forEach((url: string) => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+      });
+    };
+  }, [trips, selectedTripId]);
+
+  // 處理使用者更換封面
+  const handleCoverChange = useCallback(async (tripId: string, blob: Blob) => {
+    try {
+      await saveImage(tripId, blob);
+      // 釋放舊的 Object URL
+      const oldUrl = customCoversRef.current[tripId];
+      if (oldUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(oldUrl);
+      }
+      const newUrl = URL.createObjectURL(blob);
+      setCustomCovers(prev => ({ ...prev, [tripId]: newUrl }));
+    } catch (err) {
+      console.error('封面儲存失敗:', err);
+      alert('封面儲存失敗，請再試一次');
+    } finally {
+      isPickingImage.current = false;
+    }
+  }, []);
+
+  // 卡片點擊處理 — 換封面時不導航
+  const handleTripClick = useCallback((tripId: string) => {
+    if (isPickingImage.current) return;
+    setSelectedTripId(tripId);
+  }, []);
 
   // If a trip is selected, show the TripView
   if (selectedTripId) {
@@ -107,7 +172,7 @@ const App: React.FC = () => {
           {trips.map((trip, index) => (
             <div
               key={trip.id}
-              onClick={() => setSelectedTripId(trip.id)}
+              onClick={() => handleTripClick(trip.id)}
               className="group relative bg-white/90 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 animate-in slide-in-from-bottom-4 border border-white/40"
               style={{ animationDelay: `${index * 100}ms` }}
             >
@@ -118,11 +183,18 @@ const App: React.FC = () => {
                     {trip.season}
                   </div>
                   <img
-                    src={trip.coverImage}
+                    src={customCovers[trip.id] || trip.coverImage}
                     alt={trip.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out"
                   />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+                  {/* 更換封面按鈕 — hover 時出現 */}
+                  <div className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <ImagePicker
+                      onImageSelected={(blob) => handleCoverChange(trip.id, blob)}
+                      onPickStart={() => { isPickingImage.current = true; }}
+                    />
+                  </div>
                 </div>
 
                 {/* Content Section */}
