@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // 一次性更新提示
-  const UPDATE_KEY = 'update-seen-v2.3';
+  const UPDATE_KEY = 'update-seen-v2.4';
   const [showUpdateToast, setShowUpdateToast] = useState(() => {
     return !localStorage.getItem(UPDATE_KEY);
   });
@@ -150,10 +150,13 @@ const App: React.FC = () => {
 
       {/* ✨ 一次性更新提示 Toast */}
       {showUpdateToast && (
-        <div className="fixed top-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-500">
+        <div
+          className="fixed left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-500"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}
+        >
           <div
             onClick={dismissToast}
-            className="flex items-center gap-4 px-5 py-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-transform group md:max-w-sm"
+            className="flex items-center gap-4 px-5 py-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-transform group md:max-w-sm md:mx-auto"
           >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
               <Camera size={20} className="text-white" />
