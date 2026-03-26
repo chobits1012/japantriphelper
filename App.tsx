@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // 一次性更新提示
-  const UPDATE_KEY = 'update-seen-v2.2';
+  const UPDATE_KEY = 'update-seen-v2.3';
   const [showUpdateToast, setShowUpdateToast] = useState(() => {
     return !localStorage.getItem(UPDATE_KEY);
   });
