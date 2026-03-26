@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Map, Calendar, ChevronRight, Copy, Plane, Sparkles, BookOpen } from 'lucide-react';
+import { Plus, Map, Calendar, ChevronRight, Copy, Plane, Sparkles, BookOpen, Camera, X } from 'lucide-react';
 import { WASHI_PATTERN, HERO_IMAGE } from './constants';
 import { useTripManager } from './hooks/useTripManager';
 import TripView from './components/TripView';
@@ -14,6 +14,17 @@ const App: React.FC = () => {
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  // 一次性更新提示
+  const UPDATE_KEY = 'update-seen-v2.2';
+  const [showUpdateToast, setShowUpdateToast] = useState(() => {
+    return !localStorage.getItem(UPDATE_KEY);
+  });
+
+  const dismissToast = () => {
+    setShowUpdateToast(false);
+    localStorage.setItem(UPDATE_KEY, 'true');
+  };
 
   // 自訂封面圖片快取：tripId -> Object URL
   const [customCovers, setCustomCovers] = useState<Record<string, string>>({});
@@ -137,6 +148,29 @@ const App: React.FC = () => {
         style={{ backgroundImage: `url("${WASHI_PATTERN}")` }}
       />
 
+      {/* ✨ 一次性更新提示 Toast */}
+      {showUpdateToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-500">
+          <div
+            onClick={dismissToast}
+            className="flex items-center gap-3 px-5 py-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 dark:border-white/10 cursor-pointer hover:scale-[1.02] transition-transform group max-w-sm"
+          >
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Camera size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                新功能上線 🎉
+              </p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">
+                現在可以更換旅程封面圖片囉！將滑鼠移到卡片圖片即可更換。
+              </p>
+            </div>
+            <X size={16} className="text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
+          </div>
+        </div>
+      )}
+
       {/* --- Main Content --- */}
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 md:py-20 flex flex-col min-h-screen">
 
@@ -188,8 +222,8 @@ const App: React.FC = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out"
                   />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-                  {/* 更換封面按鈕 — hover 時出現 */}
-                  <div className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {/* 更換封面按鈕 — hover 時出現，手機上不攔截觸碰 */}
+                  <div className="absolute bottom-3 right-3 z-10 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200">
                     <ImagePicker
                       onImageSelected={(blob) => handleCoverChange(trip.id, blob)}
                       onPickStart={() => { isPickingImage.current = true; }}

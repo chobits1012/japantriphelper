@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Map, Calendar, Sparkles, Train, Briefcase, Lightbulb, ChevronRight, CheckCircle2, Cloud, DollarSign, ArrowRightLeft, ClipboardList, Save } from 'lucide-react';
+import { X, BookOpen, Map, Calendar, Sparkles, Train, Briefcase, Lightbulb, ChevronRight, CheckCircle2, Cloud, DollarSign, ArrowRightLeft, ClipboardList, Save, Camera, ImageIcon } from 'lucide-react';
 
 interface HelpModalProps {
     isOpen: boolean;
@@ -108,6 +108,9 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                                 <ul className="space-y-2 text-sm text-gray-900 dark:text-slate-200">
                                     <li className="flex gap-2"><div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-japan-blue flex-shrink-0 shadow-sm" /> 點擊旅程卡片即可進入行程表。</li>
                                     <li className="flex gap-2"><div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-japan-blue flex-shrink-0 shadow-sm" /> 卡片左上角顯示季節標籤，背景會隨季節變換。</li>
+                                    <li className="flex gap-2"><div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-pink-500 flex-shrink-0 shadow-sm" />
+                                        <span><span className="font-bold text-pink-600 dark:text-pink-400">🆕 更換封面：</span>將滑鼠移到卡片圖片區域，點擊右下角的 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-black/10 dark:bg-white/10 rounded text-xs"><Camera size={10} /> 換封面</span> 即可從相簿選取圖片。</span>
+                                    </li>
                                 </ul>
                             </section>
 
